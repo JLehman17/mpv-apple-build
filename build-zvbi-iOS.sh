@@ -63,7 +63,17 @@ then
 	if [ ! -r $SOURCE ]
 	then
 		echo 'zvbi source not found. Trying to download...'
-        curl https://sourceforge.net/projects/zapping/files/zvbi/"$ZVBI_VERSION"/zvbi-"$ZVBI_VERSION".tar.bz2/download | tar xj || exit 1
+        curl -L https://sourceforge.net/projects/zapping/files/zvbi/"$ZVBI_VERSION"/zvbi-"$ZVBI_VERSION".tar.bz2/download | tar xj || exit 1
+        
+        CWD=`pwd`
+        
+        cd $SOURCE
+        echo "Applying patches..."
+        PATCH="$CWD/patches/zvbi/Makefile.in.patch"
+        cp $PATCH ./ &&
+        patch -p0 < "Makefile.in.patch" && rm "./Makefile.in.patch" || exit 1
+        cd ..
+
 	fi
 
 	CWD=`pwd`
@@ -72,12 +82,15 @@ then
 		echo "building $ARCH..."
 		mkdir -p "$SCRATCH/$ARCH"
 		cd "$SCRATCH/$ARCH"
+  
+        CFLAGS=""
 
 		if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]
 		then
 		    PLATFORM="iphonesimulator"
 		else
 		    PLATFORM="iphoneos"
+            CFLAGS="$CFLAGS -fembed-bitcode"
 		    if [ "$ARCH" = "arm64" ]
 		    then
 		        EXPORT="GASPP_FIX_XCODE5=1"
@@ -86,11 +99,13 @@ then
 
         export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH"
         export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
-        export CFLAGS="-arch $ARCH -isysroot $SDKPATH -mios-version-min=$DEPLOYMENT_TARGET -fembed-bitcode"
-        export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -Wl,-ios_version_min,$DEPLOYMENT_TARGET -lbz2"
+        export CFLAGS="$CFLAGS -arch $ARCH -isysroot $SDKPATH -mios-version-min=$DEPLOYMENT_TARGET"
+        export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -Wl,-ios_version_min,$DEPLOYMENT_TARGET"
 
-#        export XCRUN_SDK=`echo $PLATFORM | tr '[:upper:]' '[:lower:]'`
-#        export CC="xcrun -sdk $XCRUN_SDK clang"
+        export XCRUN_SDK=`echo $PLATFORM | tr '[:upper:]' '[:lower:]'`
+        export CC="xcrun -sdk $XCRUN_SDK clang"
+        export CXX="xcrun -sdk $XCRUN_SDK clang++"
+        export CPP="xcrun clang -E"
 
 		# force "configure" to use "gas-preprocessor.pl" (FFmpeg 3.3)
 		if [ "$ARCH" = "arm64" ]
@@ -102,7 +117,7 @@ then
 
 		export CXXFLAGS="$CFLAGS"
 
-        TARGET="$ARCH-darwin"
+#        TARGET="$ARCH-darwin"
 #        CFLAGS="$CFLAGS -target $TARGET"
 
 #        if [ "$ARCH" = "arm" ]
