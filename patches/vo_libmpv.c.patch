@@ -1,0 +1,15 @@
+*** mpv-0.29.1/video/out/vo_libmpv.c	2018-07-22 12:46:25.000000000 -0400
+--- mpv-0.29.1/video/out/vo_libmpv_new.c	2018-10-26 00:09:55.000000000 -0400
+***************
+*** 297,303 ****
+--- 297,306 ----
+  
+      forget_frames(ctx, true);
+  
++     pthread_mutex_lock(&ctx->lock);
+      ctx->renderer->fns->destroy(ctx->renderer);
++     pthread_mutex_unlock(&ctx->lock);
++     
+      talloc_free(ctx->renderer->priv);
+      talloc_free(ctx->renderer);
+      talloc_free(ctx->dr);

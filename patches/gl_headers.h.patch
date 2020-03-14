@@ -1,0 +1,16 @@
+*** ./video/out/opengl/gl_headers.h	2018-09-26 13:56:56.000000000 -0400
+--- ./video/out/opengl/gl_headers_new.h	2018-09-26 13:57:43.000000000 -0400
+***************
+*** 132,138 ****
+--- 132,142 ----
+  typedef unsigned int GLuint;
+  typedef char GLchar;
+  typedef float GLfloat;
++ #if defined(__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__) && (__ENVIRONMENT_MAC_OS_X_VERSION_MIN_REQUIRED__ > 1060)
+  typedef ptrdiff_t GLsizeiptr;
++ #else
++ typedef intptr_t GLsizeiptr;
++ #endif
+  typedef intptr_t GLintptr;
+  typedef unsigned int GLbitfield;
+  typedef int GLint;

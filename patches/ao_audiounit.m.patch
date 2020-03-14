@@ -1,0 +1,19 @@
+*** ./audio/out/ao_audiounit.m	2018-07-22 12:46:25.000000000 -0400
+--- ./audio/out/ao_audiounit_new.m	2018-09-26 13:00:27.000000000 -0400
+***************
+*** 192,198 ****
+      .name           = "audiounit",
+      .uninit         = uninit,
+      .init           = init,
+!     .pause          = stop,
+      .resume         = start,
+      .priv_size      = sizeof(struct priv),
+  };
+--- 192,198 ----
+      .name           = "audiounit",
+      .uninit         = uninit,
+      .init           = init,
+!     .reset          = stop,
+      .resume         = start,
+      .priv_size      = sizeof(struct priv),
+  };

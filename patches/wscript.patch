@@ -1,0 +1,19 @@
+*** ./wscript	2018-10-02 15:03:41.000000000 -0400
+--- ./wscript_new	2018-10-22 12:01:51.000000000 -0400
+***************
+*** 151,157 ****
+          'desc': 'POSIX environment',
+          # This should be good enough.
+          'func': check_statement(['poll.h', 'unistd.h', 'sys/mman.h'],
+!             'struct pollfd pfd; poll(&pfd, 1, 0); fork(); int f[2]; pipe(f); munmap(f,0)'),
+      }, {
+          'name': '--android',
+          'desc': 'Android environment',
+--- 151,157 ----
+          'desc': 'POSIX environment',
+          # This should be good enough.
+          'func': check_statement(['poll.h', 'unistd.h', 'sys/mman.h'],
+!             'struct pollfd pfd; poll(&pfd, 1, 0); int f[2]; pipe(f); munmap(f,0)'),
+      }, {
+          'name': '--android',
+          'desc': 'Android environment',
