@@ -1,0 +1,15 @@
+--- Makefile.in	2013-08-28 10:24:12.000000000 -0400
++++ Makefile.in	2020-03-14 16:40:27.000000000 -0400
+@@ -267,11 +267,7 @@
+ 	m4 \
+ 	src \
+ 	$(proxy_dirs) \
+-	contrib \
+-	examples \
+-	test \
+-	po \
+-	doc
++	contrib
+ 
+ ACLOCAL_AMFLAGS = -I m4
+ pkgconfigdir = $(libdir)/pkgconfig
