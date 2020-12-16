@@ -6,7 +6,7 @@
 
     # directories
 ZVBI_VERSION="0.2.35"
-SOURCE="zvbi-$ZVBI_VERSION"
+SOURCE="src/zvbi-$ZVBI_VERSION"
 FAT="$BUILD_DIR/zvbi-$BUILD_EXT"
 SCRATCH=$FAT/"scratch"
 # must be an absolute path
@@ -32,6 +32,9 @@ CONFIGURE_FLAGS=" \
 echo $CONFIGURE_FLAGS
 
 COMPILE="y"
+ARCH=$1
+
+root=$(pwd)
 
 if [ "$COMPILE" ]
 then
@@ -39,37 +42,29 @@ then
 	if [ ! -r $SOURCE ]
 	then
 		echo 'zvbi source not found. Trying to download...'
+        cd src
         curl -L https://sourceforge.net/projects/zapping/files/zvbi/"$ZVBI_VERSION"/zvbi-"$ZVBI_VERSION".tar.bz2/download | tar xj || exit 1
         
         CWD=`pwd`
         
         cd $SOURCE
         echo "Applying patches..."
-        PATCH="$CWD/patches/zvbi/Makefile.in.patch"
+        PATCH="$root/patches/zvbi/Makefile.in.patch"
         cp $PATCH ./ &&
         patch -p0 < "Makefile.in.patch" && rm "./Makefile.in.patch" || exit 1
-        cd ..
+        cd $root
 	fi
 
 	CWD=`pwd`
     echo "building..."
     mkdir -p "$SCRATCH"
     cd "$SCRATCH"
-    
-#    PLATFORM="macosx"
-
-#    export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH"
-#    export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
-#    export CFLAGS="-isysroot $SDKPATH -fembed-bitcode -target x86_64-apple-ios13.0-macabi"
-#    export LDFLAGS="-isysroot $SDKPATH -Wl "
-#
-#    export CXXFLAGS="$CFLAGS"
 
     TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
         $CONFIGURE_FLAGS \
         --prefix="$THIN" \
-        --libdir="$CWD/$BUILD_DIR/$BUILD_EXT/lib" \
-        --includedir="$CWD/$BUILD_DIR/$BUILD_EXT/include" \
+        --libdir="$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/lib" \
+        --includedir="$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/include" \
     || exit 1
 
 

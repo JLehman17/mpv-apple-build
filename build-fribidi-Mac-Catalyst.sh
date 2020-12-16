@@ -1,8 +1,8 @@
 #!/bin/sh
 
-source config.sh
-
-ConfigureForMacCatalyst
+#source config.sh
+#
+#ConfigureForMacCatalyst
 
 FRIBIDI_VERSION="1.0.9"
 SOURCE="fribidi-$FRIBIDI_VERSION"

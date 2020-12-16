@@ -1,8 +1,8 @@
 #!/bin/sh
 
-#source config.sh
-#
-#ConfigureForMacCatalyst
+source config.sh
+
+ConfigureForMacCatalyst
 
 # directories
 FF_VERSION="emby"
@@ -15,12 +15,12 @@ while getopts d option
     do
     case "${option}" in
         d) DEBUG="y"
-           BUILD_DIR="build/debug"
+#           BUILD_DIR="build/debug"
            shift;;
     esac
 done
 
-FAT=$BUILD_DIR/"ffmpeg-macOS"
+FAT=$BUILD_DIR/"ffmpeg-$BUILD_EXT"
 SCRATCH=$FAT/"scratch"
 # must be an absolute path
 THIN=`pwd`/$FAT/
@@ -37,7 +37,7 @@ PATCHES=`pwd`/patches/ffmpeg
 
 #FDK_AAC=`pwd`/../fdk-aac-build-script-for-iOS/fdk-aac-ios
 
-ZVBI=`pwd`/$BUILD_DIR/macOS
+ZVBI=`pwd`/$BUILD_DIR/$BUILD_EXT
 
 CONFIGURE_FLAGS=" \
 --disable-programs \
@@ -53,14 +53,18 @@ CONFIGURE_FLAGS=" \
 --disable-decoder=mlp \
 --disable-decoder=truehd \
 --disable-filters \
---disable-securetransport \
 --disable-asm \
+--enabled-libaom \
 "
+
+#--disable-securetransport \
 
 if [ "$DEBUG" ]
 then
     CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-debug --disable-stripping --disable-optimizations"
 else
+#    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --optflags=-O"
+#    --optflags="-O2"
     CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-debug --enable-stripping --enable-optimizations"
 fi
 
@@ -164,7 +168,7 @@ then
         LDFLAGS="$LDFLAGS -L$ZVBI/lib"
     fi
 
-    export PKG_CONFIG_SYSROOT_DIR="$CWD/$BUILD_DIR/macOS"
+    export PKG_CONFIG_SYSROOT_DIR="$CWD/$BUILD_DIR/$BUILD_EXT"
     export PKG_CONFIG_LIBDIR="$PKG_CONFIG_SYSROOT_DIR/lib/pkgconfig"
     
     TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
@@ -177,10 +181,11 @@ then
         --extra-ldflags="$LDFLAGS" \
         --prefix="$THIN" \
         --pkg-config=pkg-config \
-        --libdir=$CWD/$BUILD_DIR/macOS/lib \
-        --incdir=$CWD/$BUILD_DIR/macOS/include \
+        --libdir=$CWD/$BUILD_DIR/$BUILD_EXT/lib \
+        --incdir=$CWD/$BUILD_DIR/$BUILD_EXT/include \
     || exit 1
 
+     make clean
      make -j4 install || exit 1
     cd $CWD
 fi

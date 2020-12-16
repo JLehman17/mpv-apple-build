@@ -1,8 +1,9 @@
+
 #!/bin/sh
 
-source config.sh
-
-ConfigureForMacCatalyst
+#source config.sh
+#
+#ConfigureForMacCatalyst
 
 LIBASS_VERSION="0.14.0"
 SOURCE="libass-$LIBASS_VERSION"
@@ -33,8 +34,8 @@ echo "Configuring with options $CONFIGURE_FLAGS"
 
 $CWD/$SOURCE/configure $CONFIGURE_FLAGS \
      --prefix="$THIN" \
-     --libdir=$CWD/$BUILD_DIR/$BUILD_EXT/lib \
-     --includedir=$CWD/$BUILD_DIR/$BUILD_EXT/include \
+     --libdir="$CWD/$BUILD_DIR/$BUILD_EXT/lib" \
+     --includedir="$CWD/$BUILD_DIR/$BUILD_EXT/include" \
  || exit 1
 
 make -j4 install || exit 1

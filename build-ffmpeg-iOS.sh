@@ -3,7 +3,7 @@
 
 # directories
 FF_VERSION="emby"
-SOURCE="ffmpeg-4.2.1"
+SOURCE="ffmpeg-4.1.3"
 
 DEBUG=
 BUILD_DIR="build/release"
@@ -50,6 +50,7 @@ CONFIGURE_FLAGS=" \
 --disable-decoder=dca \
 --disable-decoder=mlp \
 --disable-decoder=truehd \
+--enable-libaom \
 "
 
 if [ "$DEBUG" ]
@@ -57,6 +58,11 @@ then
     CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-debug --disable-stripping --disable-optimizations"
 else
     CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-debug --enable-stripping --enable-optimizations"
+fi
+
+if [ "$DAV1D" ]
+then
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-libdav1d"
 fi
 
 if [ "$X264" ]
@@ -88,7 +94,7 @@ ARCHS="arm64 x86_64"
 COMPILE="y"
 LIPO="y"
 
-DEPLOYMENT_TARGET="9.0"
+DEPLOYMENT_TARGET="11.0"
 
 if [ "$*" ]
 then
@@ -137,8 +143,8 @@ then
 #        git submodule add -f https://github.com/MediaBrowser/ffmpeg.git
 #        cd $SOURCE && git checkout 'emby/4.0.2/qsvfixes'
 
-        echo "Applying videotoolbox.c patch..."
-        git apply ./patches/ffmpeg/FFmpeg-devel-lavc-vt_hevc-fix-crash-if-vps_list-0-or-sps_list-0-are-null.patch || exit 1
+#        echo "Applying videotoolbox.c patch..."
+#        git apply ./patches/ffmpeg/FFmpeg-devel-lavc-vt_hevc-fix-crash-if-vps_list-0-or-sps_list-0-are-null.patch || exit 1
 
 #        cd ..
 	fi
@@ -185,7 +191,8 @@ then
 
 
 		XCRUN_SDK=`echo $PLATFORM | tr '[:upper:]' '[:lower:]'`
-		CC="xcrun -sdk $XCRUN_SDK clang"
+        SYSROOT=$(xcrun --sdk $XCRUN_SDK --show-sdk-path)
+		CC="xcrun -sdk $XCRUN_SDK clang -isysroot=$SYSROOT"
 
 		# force "configure" to use "gas-preprocessor.pl" (FFmpeg 3.3)
 		if [ "$ARCH" = "arm64" ]
@@ -212,6 +219,9 @@ then
             CFLAGS="$CFLAGS -I$ZVBI/include"
             LDFLAGS="$LDFLAGS -L$ZVBI/lib"
         fi
+        
+        CFLAGS="$CFLAGS -I$CWD/build/release/libs-iOS/include"
+        LDFLAGS="$LDFLAGS -L$CWD/build/release/libs-iOS/$ARCH"
 
 #        TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
 #            --target-os=darwin \
@@ -226,8 +236,13 @@ then
 
 # --host-os="$CHOST"
 
+        export PKG_CONFIG_SYSROOT_DIR="$CWD/build/release/libs-iOS"
+        export PKG_CONFIG_LIBDIR="$PKG_CONFIG_SYSROOT_DIR/$ARCH/pkgconfig"
+
         TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
             --target-os=darwin \
+            --enable-cross-compile \
+            --sysroot=$SYSROOT \
             --arch=$ARCH \
             --cc="$CC" \
             --as="$AS" \

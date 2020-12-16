@@ -7,14 +7,19 @@
 CWD=`pwd`
 
 FREETYPE_VERSION="2.10.1"
-SOURCE="freetype-$FREETYPE_VERSION"
+SOURCE="src/freetype-$FREETYPE_VERSION"
 BUILD="$CWD/$BUILD_DIR"
 SCRATCH="$BUILD/freetype-$BUILD_EXT"
+ARCH=$1
+
+root=$(pwd)
 
 if [ ! -r $SOURCE ]
 then
     echo "freetype source not found. Attempting to download..."
-    curl -L "https://download.savannah.gnu.org/releases/freetype/$SOURCE.tar.xz" | tar -xj || exit 1
+    cd src
+    curl -L "https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_VERSION.tar.xz" | tar -xj || exit 1
+    cd $root
 fi
 
 echo "building..."
@@ -35,8 +40,8 @@ echo "Configuring with options $CONFIGURE_FLAGS"
 
 $CWD/$SOURCE/configure $CONFIGURE_FLAGS \
      --prefix="$SCRATCH" \
-     --libdir="$CWD/$BUILD_DIR/$BUILD_EXT/lib" \
-     --includedir="$CWD/$BUILD_DIR/$BUILD_EXT/include" \
+     --libdir="$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/lib" \
+     --includedir="$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/include" \
  || exit 1
 
 make -j4 install || exit 1

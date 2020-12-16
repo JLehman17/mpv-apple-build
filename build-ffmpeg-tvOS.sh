@@ -3,7 +3,7 @@
 
 # directories
 FF_VERSION="emby"
-SOURCE="ffmpeg-4.2.1"
+SOURCE="ffmpeg-4.1.3"
 
 DEBUG=
 BUILD_DIR="build/release"
@@ -50,6 +50,7 @@ CONFIGURE_FLAGS=" \
 --disable-decoder=dca \
 --disable-decoder=mlp \
 --disable-decoder=truehd \
+--enable-libaom
 "
 
 if [ "$DEBUG" ]
@@ -191,7 +192,12 @@ then
             CFLAGS="$CFLAGS -I$ZVBI/include"
             LDFLAGS="$LDFLAGS -L$ZVBI/lib"
         fi
-
+        
+        CFLAGS="$CFLAGS -I$CWD/build/release/libs-tvOS/thin/$ARCH/include"
+        LDFLAGS="$LDFLAGS -L$CWD/build/release/libs-tvOS/thin/$ARCH/lib"
+        
+        export PKG_CONFIG_SYSROOT_DIR="$CWD/build/release/libs-tvOS/thin"
+        export PKG_CONFIG_LIBDIR="$PKG_CONFIG_SYSROOT_DIR/$ARCH/lib/pkgconfig"
 
         TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
             --target-os=darwin \
@@ -202,6 +208,7 @@ then
             --extra-cflags="$CFLAGS" \
             --extra-ldflags="$LDFLAGS" \
             --prefix="$THIN/$ARCH" \
+            --libdir="$CWD/build/release/libs-tvOS/thin/${ARCH}/lib" \
         || exit 1
 
          make -j4 install || exit 1

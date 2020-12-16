@@ -9,7 +9,7 @@ COMPILE="y"
 
 CWD=`pwd`
 MPV_VERSION="master"
-SOURCE="mpv-$MPV_VERSION"
+SOURCE="mpv"
 
 DEBUG=
 BUILD_DIR="build/release/mpv-tvOS"
@@ -25,9 +25,6 @@ done
 THIN=$CWD/$BUILD_DIR/"thin"
 SCRATCH=$CWD/$BUILD_DIR/"scratch"
 FFMPEG_BUILD=$BUILD_DIR/"ffmpeg-tvOS"
-
-# When building for x86_64 configure fails to find development files for ffmpeg for some reason
-# As a workaround we need to disable the required check in 'wscript' called 'libav-any'
 
 if [ "$*" ]
 then
@@ -67,7 +64,7 @@ then
 
     # Apply patches
 
-    PATCHES=$CWD/patches
+#    PATCHES=$CWD/patches
 
 #        echo "Applying ao_audiounit.m patch..."
 #        mv $PATCHES/ao_audiounit.m.patch ./ &&
@@ -103,9 +100,12 @@ then
         export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH"
         export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
         export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mtvos-version-min=$DEPLOYMENT_TARGET -fembed-bitcode \
-    -I$CWD/$FFMPEG_BUILD/thin/$ARCH/include"
+                        -I$CWD/build/release/libs-tvOS/thin/${ARCH}/include"
         export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -mtvos-version-min=$DEPLOYMENT_TARGET -lbz2 \
-    -L$CWD/$FFMPEG_BUILD/thin/$ARCH/lib"
+                        -L$CWD/build/release/libs-tvOS/thin/${ARCH}/lib"
+                        
+        export PKG_CONFIG_SYSROOT_DIR="$CWD/build/release/libs-tvOS/thin"
+        export PKG_CONFIG_LIBDIR="$PKG_CONFIG_SYSROOT_DIR/$ARCH/lib/pkgconfig"
 
 
     #--enable-videotoolbox-gl

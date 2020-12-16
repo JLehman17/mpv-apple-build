@@ -2,14 +2,15 @@
 
 
 ARCHS="arm64 x86_64"
-DEPLOYMENT_TARGET="9.0.0"
+DEPLOYMENT_TARGET="11.0.0"
 
 LIPO="y"
 COMPILE="y"
 
 CWD=`pwd`
-MPV_VERSION="master"
-SOURCE="mpv-$MPV_VERSION"
+MPV_VERSION="0.32.0"
+#SOURCE="mpv-$MPV_VERSION"
+SOURCE="mpv"
 
 DEBUG=
 BUILD_DIR="build/release/mpv-iOS"
@@ -40,9 +41,14 @@ CONFIGURE_FLAGS=" \
 --enable-lgpl \
 "
 
+#--disable-zimg \
+#--disable-rubberband \
+#--disable-vapoursynth \
+#--disable-libbluray \
+
 if [ "$DEBUG" ]
 then
-    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-optimize --enable-debug-build"
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-optimize"
 else
     CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-debug-build"
 fi
@@ -115,22 +121,25 @@ then
         export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH"
         export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
         export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mios-version-min=$DEPLOYMENT_TARGET -fembed-bitcode \
-                        -I$CWD/$FFMPEG_BUILD/thin/$ARCH/include"
+                        -I$CWD/build/release/libs-iOS/include"
         export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -Wl,-ios_version_min,$DEPLOYMENT_TARGET -lbz2 \
-                        -L$CWD/$FFMPEG_BUILD/thin/$ARCH/lib"
+                        -L$CWD/build/release/libs-iOS/$ARCH"
 
 
     #--enable-videotoolbox-gl
         OPTION_FLAGS=" $CONFIGURE_FLAGS \
---out=$SCRATCH/$ARCH \
---includedir=$THIN/$ARCH/include \
---prefix=$THIN/$ARCH
-"
+            --out=$SCRATCH/$ARCH \
+            --includedir=$THIN/$ARCH/include \
+            --prefix=$THIN/$ARCH
+            "
 
         echo "Configuring with options $OPTION_FLAGS"
 #echo $LDFLAGS
 #echo $CFLAGS
 #exit 0
+
+        export PKG_CONFIG_SYSROOT_DIR="$CWD/build/release/libs-iOS"
+        export PKG_CONFIG_LIBDIR="$PKG_CONFIG_SYSROOT_DIR/$ARCH/pkgconfig"
 
         ./waf configure $OPTION_FLAGS || exit 1
         ./waf build -j4 || exit 1

@@ -5,15 +5,20 @@
 #ConfigureForMacCatalyst
 
 HARFBUZZ_VERSION="2.2.0"
-SOURCE="harfbuzz-$HARFBUZZ_VERSION"
+SOURCE="src/harfbuzz-$HARFBUZZ_VERSION"
 FAT="$BUILD_DIR/harfbuzz-$BUILD_EXT"
 SCRATCH=$FAT/"scratch"
 THIN=`pwd`/$FAT
+ARCH=$1
+
+root=$(pwd)
 
 if [ ! -r $SOURCE ]
 then
     echo "harfbuzz source not found. Attempting to download..."
-    curl -L "https://www.freedesktop.org/software/harfbuzz/release/$SOURCE.tar.bz2" | tar -xj || exit 1
+    cd src
+    curl -L "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$HARFBUZZ_VERSION.tar.bz2" | tar -xj || exit 1
+    cd $root
 fi
 
 CWD=`pwd`
@@ -32,22 +37,10 @@ CONFIGURE_FLAGS=" \
 --with-fontconfig=no \
 "
 
-#echo "Configuring with options $CONFIGURE_FLAGS"
-
-#export CFLAGS="$CFLAGS -I$CWD/$BUILD_DIR/$BUILD_EXT/include/freetype2/"
-#export CXXFLAGS="$CFLAGS"
-#export CPPFLAGS="$CFLAGS"
-
-#echo $PKG_CONFIG_LIBDIR
-#echo $(pkg-config freetype2 --cflags --debug) && exit 0;
-#echo $CFLAGS && exit 0;
-#make clean
-#make distclean
-
 $CWD/$SOURCE/configure $CONFIGURE_FLAGS \
      --prefix="$THIN" \
-     --libdir=$CWD/$BUILD_DIR/$BUILD_EXT/lib \
-     --includedir=$CWD/$BUILD_DIR/$BUILD_EXT/include \
+     --libdir=$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/lib \
+     --includedir=$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/include \
  || exit 1
 
 make -j4 install || exit 1
