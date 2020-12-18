@@ -1,15 +1,11 @@
 #!/bin/sh
 
 
-ARCHS="arm64 x86_64"
 DEPLOYMENT_TARGET="11.0.0"
 
 CWD=`pwd`
 SOURCE="src/aom"
-
-source config.sh
-
-ConfigureForMacCatalyst
+ARCH=$1
 
 root=$(pwd)
 
@@ -19,7 +15,7 @@ function downloadDeps() {
         echo 'aom source not found. Trying to download...'
         cd src
         git clone https://aomedia.googlesource.com/aom
-        cd $root
+        cd $ROOT_DIR
     fi
 }
 
@@ -29,7 +25,7 @@ cd ./$SOURCE/
 
 cwd=$(pwd)
 
-ARCH="x86_64"
+ARCH="${ARCH}"
 ARCH_OPTIONS="-DARCH_X86_64=0 -DENABLE_SSE=0 -DENABLE_SSE2=0 -DENABLE_SSE3=0 -DENABLE_SSE4_1=0 -DENABLE_SSE4_2=0 -DENABLE_MMX=0 -DCONFIG_OS_SUPPORT=0 -DCONFIG_RUNTIME_CPU_DETECT=0"
 
 #    export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH"
@@ -48,8 +44,8 @@ AS="$CC"
 CXXFLAGS="$CFLAGS"
 LDFLAGS="$CFLAGS"
 
-cp $root/tools/aom/libaom.x86_64-mac-catalyst.cmake build/cmake/toolchains/
-TOOLCHAIN_FILE="build/cmake/toolchains/libaom.x86_64-mac-catalyst.cmake"
+cp "$root/tools/aom/libaom.${ARCH}-mac-catalyst.cmake" "build/cmake/toolchains/"
+TOOLCHAIN_FILE="build/cmake/toolchains/libaom.${ARCH}-mac-catalyst.cmake"
 
 build="${cwd}/cmake-build"
 scratch="${build}/scratch/${ARCH}"

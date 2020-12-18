@@ -1,15 +1,12 @@
 #!/bin/sh
 
-#source config.sh
-#
-#ConfigureForMacCatalyst
+ARCH=$1
 
 HARFBUZZ_VERSION="2.2.0"
 SOURCE="src/harfbuzz-$HARFBUZZ_VERSION"
-FAT="$BUILD_DIR/harfbuzz-$BUILD_EXT"
-SCRATCH=$FAT/"scratch"
-THIN=`pwd`/$FAT
-ARCH=$1
+SCRATCH="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/harfbuzz"
+BUILD_OUT=$SCRATCH/"build"
+PREFIX=`pwd`/$BUILD_OUT
 
 root=$(pwd)
 
@@ -22,9 +19,12 @@ then
 fi
 
 CWD=`pwd`
-echo "building..."
-mkdir -p "$SCRATCH"
-cd "$SCRATCH"
+echo "building... $ARCH"
+mkdir -p "$BUILD_OUT"
+cd "$BUILD_OUT"
+
+config_guess=$root/$SOURCE/config.guess
+host=$($config_guess)
 
 CONFIGURE_FLAGS=" \
 --disable-shared \
@@ -35,10 +35,11 @@ CONFIGURE_FLAGS=" \
 --with-icu=no \
 --with-glib=no \
 --with-fontconfig=no \
+--host=${host} \
 "
 
 $CWD/$SOURCE/configure $CONFIGURE_FLAGS \
-     --prefix="$THIN" \
+     --prefix="$PREFIX" \
      --libdir=$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/lib \
      --includedir=$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/include \
  || exit 1

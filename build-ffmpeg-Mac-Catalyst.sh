@@ -2,7 +2,7 @@
 
 source config.sh
 
-ConfigureForMacCatalyst
+config_for_maccatalyst x86_64
 
 # directories
 FF_VERSION="emby"
@@ -54,7 +54,7 @@ CONFIGURE_FLAGS=" \
 --disable-decoder=truehd \
 --disable-filters \
 --disable-asm \
---enabled-libaom \
+--enable-libaom \
 "
 
 #--disable-securetransport \
@@ -168,8 +168,9 @@ then
         LDFLAGS="$LDFLAGS -L$ZVBI/lib"
     fi
 
-    export PKG_CONFIG_SYSROOT_DIR="$CWD/$BUILD_DIR/$BUILD_EXT"
-    export PKG_CONFIG_LIBDIR="$PKG_CONFIG_SYSROOT_DIR/lib/pkgconfig"
+#    export PKG_CONFIG_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/x86_64/lib/pkgconfig"
+#    export PKG_CONFIG_SYSROOT_DIR="$CWD/$BUILD_DIR/$BUILD_EXT"
+#    export PKG_CONFIG_LIBDIR="$PKG_CONFIG_SYSROOT_DIR/lib/pkgconfig"
     
     TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
         --target-os=darwin \
