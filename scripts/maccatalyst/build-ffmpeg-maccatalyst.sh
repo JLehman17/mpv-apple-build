@@ -46,11 +46,15 @@ function download_deps() {
         cd $ROOT_DIR/$SOURCE
 
         echo "Applying videotoolbox.c patches..."
-        git apply $ROOT_DIR/patches/ffmpeg/FFmpeg-devel-lavc-vt_hevc-fix-crash-if-vps_list-0-or-sps_list-0-are-null.patch || exit 1
+        git apply $PATCHES/FFmpeg-devel-lavc-vt_hevc-fix-crash-if-vps_list-0-or-sps_list-0-are-null.patch || exit 1
         
-        patch="$ROOT_DIR/patches/ffmpeg/maccatalyst_videotoolbox.c.patch"
+        patch="$PATCHES/maccatalyst_videotoolbox.c.patch"
         cp $patch ./ &&
         patch -p0 < "maccatalyst_videotoolbox.c.patch" && rm "./maccatalyst_videotoolbox.c.patch" || exit 1
+        
+        patch="$PATCHES/maccatalyst_tls_securetransport.c.patch"
+        cp $patch ./ &&
+        patch -p0 < "maccatalyst_tls_securetransport.c.patch" && rm "./maccatalyst_tls_securetransport.c.patch" || exit 1
 
         cd $ROOT_DIR
     fi
@@ -74,9 +78,8 @@ CONFIGURE_FLAGS=" \
 --disable-decoder=truehd \
 --disable-filters \
 --disable-asm \
---enable-libaom \
---enable-libzvbi \
---disable-securetransport \
+--disable-libaom \
+--enable-libzvbi
 "
 
 

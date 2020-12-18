@@ -1,0 +1,19 @@
+*** libavformat/tls_securetransport.c	2020-12-18 14:00:46.000000000 -0500
+--- libavformat/tls_securetransport.new.c	2020-12-18 14:00:01.000000000 -0500
+***************
+*** 69,75 ****
+  
+  static int import_pem(URLContext *h, char *path, CFArrayRef *array)
+  {
+! #if !HAVE_SECITEMIMPORT
+      return AVERROR_PATCHWELCOME;
+  #else
+      AVIOContext *s = NULL;
+--- 69,75 ----
+  
+  static int import_pem(URLContext *h, char *path, CFArrayRef *array)
+  {
+! #if !HAVE_SECITEMIMPORT || TARGET_OS_MACCATALYST
+      return AVERROR_PATCHWELCOME;
+  #else
+      AVIOContext *s = NULL;

@@ -4,7 +4,7 @@ set -e
 
 source config.sh
 
-config_for_maccatalyst
+config_for_ios
 
 CWD=$(pwd)
 LOG="${CWD}/${BUILD_DIR}/${BUILD_EXT}/build.log"
@@ -21,8 +21,8 @@ DEPS=(
 )
 
 ARCHS=(
-    x86_64
     arm64
+    x86_64
 )
 
 echo "Starting Build $(date)" | tee ${LOG}

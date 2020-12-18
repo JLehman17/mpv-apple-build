@@ -1,59 +1,34 @@
 #!/bin/sh
 
-set -e
+source config.sh
 
-CWD=`pwd`
-INCLUDE_DIR="$CWD/build/release/maccatalyst/include"
-MAC_DIR="$CWD/build/release/maccatalyst/lib/"
-ARM64_DIR="$CWD/build/release/libs-iOS/arm64/"
-X86_64_DIR="$CWD/build/release/libs-iOS/x86_64/"
+OUTPUT="${ROOT_DIR}/output"
 
-FFMPEG_DIR="$CWD/build/release/ffmpeg-iOS/thin"
-MPV_DIR="$CWD/build/release/mpv-iOS/thin"
-FRAMEWORKS_DIR="/Users/josh/Projects/Emby/emby-ios/Frameworks/"
-
-FFMPEG_LIBS=(
-    libavcodec
-    libavdevice
-    libavfilter
-    libavformat
-    libavutil
-    libpostproc
-    libswresample
-    libswscale
+PLATFORMS=(
+    ios/arm64
+    ios/x86_64
+    maccatalyst
 )
 
-OTHER_LIBS=(
-#    libass
-#    libfreetype
-#    libfribidi
-#    libharfbuzz
-#    libmpv
-#    libzvbi
-)
+if [ -r $OUTPUT ]
+then
+    rm -r $OUTPUT
+fi
+mkdir $OUTPUT
 
-#LIBS=("${FFMPEG_LIBS[@]}" "${OTHER_LIBS[@]}")
-
-TARGETS=(
-#    ios-arm64
-    ios-x86_64-simulator
-#    ios-x86_64-maccatalyst
-)
-
-#ARCH="arm64"
-ARCH="x86_64"
-
-for TARGET in ${TARGETS[@]}
+platform_0=${PLATFORMS[0]}
+for lib in $(ls ${BUILD_DIR}/${platform_0}/lib/*.a)
 do
 
-    for LIB in ${FFMPEG_LIBS[@]}
+    framework_arguments=""
+    filename=$(basename $lib)
+    lib_name="${filename%.*}"
+    for platform in ${PLATFORMS[@]}
     do
-        cp "$FFMPEG_DIR/$ARCH/lib/$LIB.a" "$FRAMEWORKS_DIR/$LIB.xcframework/$TARGET"
+        framework_arguments="$framework_arguments -library ${BUILD_DIR}/${platform}/lib/${filename}"
     done
-
-    for LIB in ${OTHER_LIBS[@]}
-    do
-        cp "$MPV_DIR/$ARCH/lib/$LIB.a" "$FRAMEWORKS_DIR/$LIB.xcframework/$TARGET"
-    done
-
+    
+    xcodebuild -create-xcframework \
+        $framework_arguments \
+        -output "${OUTPUT}/${lib_name}.xcframework"
 done
