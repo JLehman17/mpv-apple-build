@@ -84,6 +84,34 @@ function config_for_maccatalyst() {
     ensure_build_dir
 }
 
+function config_for_macos() {
+
+    ARCH=$1
+
+    export PLATFORM="macosx"
+    export BUILD_EXT="macos"
+    
+    export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
+    
+    XCRUN_SDK=`echo $PLATFORM | tr '[:upper:]' '[:lower:]'`
+    export CC="xcrun -sdk $XCRUN_SDK clang"
+    export CXX="xcrun -sdk $XCRUN_SDK clang++"
+    export CPP="$CC -E"
+    export AR=$(xcrun -sdk $XCRUN_SDK -find ar)
+    
+    export CFLAGS="-isysroot $SDKPATH -arch $ARCH \
+            -I$CWD/$BUILD_DIR/$BUILD_EXT/${ARCH}/include"
+    export LDFLAGS="-isysroot $SDKPATH -arch $ARCH \
+            -L$CWD/$BUILD_DIR/$BUILD_EXT/${ARCH}/lib"
+    export CXXFLAGS="$CFLAGS"
+    export CPPFLAGS="$CFLAGS"
+    
+    export PKG_CONFIG=pkg-config
+    export PKG_CONFIG_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib/pkgconfig"
+    
+    ensure_build_dir
+}
+
 function config_for_tvos() {
     
     local ARCH=$1

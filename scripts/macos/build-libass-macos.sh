@@ -2,38 +2,34 @@
 
 ARCH=$1
 
-CWD=`pwd`
+LIBASS_VERSION="0.14.0"
+SOURCE="src/libass-$LIBASS_VERSION"
 
-FREETYPE_VERSION="2.10.1"
-SOURCE="src/freetype-$FREETYPE_VERSION"
-BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/freetype"
+BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/libass"
 SCRATCH=$BUILD_OUT/"build"
 PREFIX=$ROOT_DIR/$BUILD_OUT
 
-root=$(pwd)
-
 if [ ! -r $SOURCE ]
 then
-    echo "freetype source not found. Attempting to download..."
+    echo "libass source not found. Attempting to download..."
     cd src
-    curl -L "https://download.savannah.gnu.org/releases/freetype/freetype-$FREETYPE_VERSION.tar.xz" | tar -xj || exit 1
-    cd $root
+    curl -L "https://github.com/libass/libass/releases/download/$LIBASS_VERSION/libass-$LIBASS_VERSION.tar.gz" | tar -xj || exit 1
+    cd $ROOT_DIR
 fi
 
+CWD=`pwd`
 echo "building..."
 mkdir -p "$SCRATCH"
 cd "$SCRATCH"
 
-config_guess=$root/$SOURCE/builds/unix/config.guess
+config_guess=$ROOT_DIR/$SOURCE/config.guess
 host=$($config_guess)
 
 CONFIGURE_FLAGS=" \
 --disable-shared \
 --enable-static \
---disable-freetype-config \
---with-harfbuzz=no \
---with-png=no \
---host=${host} \
+--disable-fontconfig \
+--host=$host \
 "
 
 echo "Configuring with options $CONFIGURE_FLAGS"
@@ -49,4 +45,4 @@ $CWD/$SOURCE/configure $CONFIGURE_FLAGS \
 
 make -j4 install || exit 1
 
-
+echo Done

@@ -7,7 +7,7 @@ OUTPUT="${ROOT_DIR}/output"
 PLATFORMS=(
     ios/arm64
     ios/x86_64
-    maccatalyst
+    maccatalyst/x86_64
 )
 
 if [ -r $OUTPUT ]
@@ -28,6 +28,7 @@ do
         framework_arguments="$framework_arguments -library ${BUILD_DIR}/${platform}/lib/${filename}"
     done
     
+    echo "Creating xcframwork for ${lib}"
     xcodebuild -create-xcframework \
         $framework_arguments \
         -output "${OUTPUT}/${lib_name}.xcframework"
