@@ -5,6 +5,7 @@ CWD=`pwd`
 
 DEPLOYMENT_TARGET_IOS="11.0.0"
 DEPLOYMENT_TARGET_TVOS="9.0.0"
+DEPLOYMENT_TARGET_WATCHOS="7.0.0"
 
 XCODE_PATH=$(xcode-select -p)
 export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH"
@@ -37,9 +38,43 @@ function config_for_ios() {
     export AR=$(xcrun -sdk $XCRUN_SDK -find ar)
     
     export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
-    export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mtvos-version-min=$DEPLOYMENT_TARGET_IOS -arch $ARCH -fembed-bitcode \
+    export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mios-version-min=$DEPLOYMENT_TARGET_IOS -arch $ARCH \
                     -I${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/include"
-    export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -mtvos-version-min=$DEPLOYMENT_TARGET_IOS -arch $ARCH \
+    export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -mios-version-min=$DEPLOYMENT_TARGET_IOS -arch $ARCH \
+                    -L${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib"
+    export CXXFLAGS="$CFLAGS"
+    export CPPFLAGS="$CFLAGS"
+    
+    export PKG_CONFIG=pkg-config
+    export PKG_CONFIG_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib/pkgconfig"
+    
+    ensure_build_dir
+}
+
+function config_for_watchos() {
+
+    local ARCH=$1
+    export BUILD_EXT="watchos"
+    
+    if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]
+    then
+        PLATFORM="watchsimulator"
+    else
+        PLATFORM="watchos"
+    fi
+    export PLATFORM=$PLATFORM
+    
+    XCRUN_SDK=`echo $PLATFORM | tr '[:upper:]' '[:lower:]'`
+    SYSROOT=$(xcrun --sdk $XCRUN_SDK --show-sdk-path)
+    export CC="xcrun -sdk $XCRUN_SDK clang -isysroot=$SYSROOT"
+    export CXX="xcrun -sdk $XCRUN_SDK clang++ -isysroot=$SYSROOT"
+    export CPP="$CC -E"
+    export AR=$(xcrun -sdk $XCRUN_SDK -find ar)
+    
+    export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
+    export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mwatchos-version-min=$DEPLOYMENT_TARGET_WATCHOS -arch $ARCH \
+                    -I${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/include -fembed-bitcode"
+    export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -mwatchos-version-min=$DEPLOYMENT_TARGET_WATCHOS -arch $ARCH \
                     -L${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib"
     export CXXFLAGS="$CFLAGS"
     export CPPFLAGS="$CFLAGS"

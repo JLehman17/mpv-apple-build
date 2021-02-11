@@ -1,6 +1,8 @@
-#!/bin/sh
+#!/bin/sh -e
 
-HARFBUZZ_VERSION="2.2.0"
+source config.sh
+
+HARFBUZZ_VERSION="2.7.2"
 SOURCE="harfbuzz-$HARFBUZZ_VERSION"
 BUILD="Harfbuzz-iOS"
 THIN=`pwd`/$BUILD/"thin"
@@ -34,34 +36,21 @@ then
     if [ ! -r $SOURCE ]
     then
         echo "harfbuzz source not found. Attempting to download..."
-        curl -L "https://www.freedesktop.org/software/harfbuzz/release/$SOURCE.tar.bz2" | tar -xj || exit 1
+        wget https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz -O - | \
+            tar -xJ
     fi
 
     cd ./$SOURCE
+    
+    export LDFLAGS="$LDFLAGS -lz -lbz2"
 
     for ARCH in $ARCHS
     do
 
         echo "building $ARCH..."
 
-        if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]
-        then
-            PLATFORM="iphonesimulator"
-        else
-            PLATFORM="iphoneos"
-        fi
-
-        export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH"
-        export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
-        export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mios-version-min=$DEPLOYMENT_TARGET"
-#        export CPPFLAGS="-mios-version-min=$DEPLOYMENT_TARGET"
-        export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -L/Users/Josh/Projects/Emby/emby-ios/platforms/ios/libs/"
-        export CC="$(xcrun -find -sdk iphoneos clang)"
-        export CXX="$(xcrun -find -sdk iphoneos clang++)"
-#export CC="$(which gcc)"
-#export CXX="$(which g++)"
-#        export LT_SYS_LIBRARY_PATH="/Users/Josh/Projects/Emby/emby-ios/platforms/ios/libs/"
-
+        config_for_ios $ARCH
+        
         CONFIGURE_FLAGS=" \
         --disable-shared \
         --enable-static \
@@ -91,11 +80,8 @@ then
 
 #        ./autogen.sh
 
-        make clean
-        make distclean
-
         ./configure $CONFIGURE_FLAGS &&
-        make -j3 install || exit 1
+        make -j8 install || exit 1
 
     done
 

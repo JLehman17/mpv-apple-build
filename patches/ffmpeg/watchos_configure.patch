@@ -1,0 +1,10 @@
+--- configure	2021-01-15 18:56:35.000000000 -0500
++++ configure.new	2021-01-15 18:59:28.000000000 -0500
+@@ -4858,6 +4858,7 @@
+         elif check_arm_arch 7M  7_M;  then echo armv7-m
+         elif check_arm_arch 7EM 7E_M; then echo armv7-m
+         elif check_arm_arch 8A  8_A;  then echo armv8-a
++        elif check_arm_arch 8_3  8_3;  then echo armv8.3-a
+         fi
+     }
+ 
