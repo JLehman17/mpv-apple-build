@@ -2,7 +2,7 @@
 
 ARCH=$1
 
-HARFBUZZ_VERSION="2.7.2"
+HARFBUZZ_VERSION="2.2.0"
 SOURCE="src/harfbuzz-$HARFBUZZ_VERSION"
 SCRATCH="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/harfbuzz"
 BUILD_OUT=$SCRATCH/"build"
@@ -111,6 +111,9 @@ CONFIGURE_FLAGS=" \
 --build=${build} \
 --host=${host} \
 "
+
+# Workaround for libtool -bind_at_load
+export MACOSX_DEPLOYMENT_TARGET="10.14.1"
 
 $CWD/$SOURCE/configure $CONFIGURE_FLAGS \
      --prefix="$PREFIX" \

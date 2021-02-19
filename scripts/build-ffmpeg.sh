@@ -120,16 +120,18 @@ mkdir -p "$SCRATCH"
 cd "$SCRATCH"
 
 # force "configure" to use "gas-preprocessor.pl" (FFmpeg 3.3)
-if [ "$ARCH" = "arm64" ]
+if [ "$ARCH" = "arm64" -o "$ARCH" = "arm64-simulator" ]
 then
+    real_arch="arm64"
     AS="gas-preprocessor.pl -arch aarch64 -- $CC"
 else
+    real_arch=$ARCH
     AS="gas-preprocessor.pl -- $CC"
 fi
 
 TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
     --target-os=darwin \
-    --arch="${ARCH}" \
+    --arch="${real_arch}" \
     --cc="$CC" \
     --as="$AS" \
     --sysroot="$SDKPATH" \

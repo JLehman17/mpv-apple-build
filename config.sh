@@ -4,7 +4,7 @@ export BUILD_DIR="build/release"
 CWD=`pwd`
 
 DEPLOYMENT_TARGET_IOS="11.0.0"
-DEPLOYMENT_TARGET_TVOS="9.0.0"
+DEPLOYMENT_TARGET_TVOS="14.0.0"
 DEPLOYMENT_TARGET_WATCHOS="7.0.0"
 
 XCODE_PATH=$(xcode-select -p)
@@ -150,13 +150,22 @@ function config_for_macos() {
 function config_for_tvos() {
     
     local ARCH=$1
+    local arch_name=$ARCH
     export BUILD_EXT="tvOS"
     
-    if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]
+    if [ "$ARCH" = "arm64-simulator" -o "$ARCH" = "x86_64" ]
     then
         PLATFORM="appletvsimulator"
+        if [ "$ARCH" = "arm64-simulator" ]
+        then
+            ARCH="arm64"
+            target="arm64-apple-tvos14.0-simulator"
+        else
+            target="x86_64-apple-tvos14.0-simulator"
+        fi
     else
         PLATFORM="appletvos"
+        target="arm64-apple-tvos14.0"
     fi
     export PLATFORM=$PLATFORM
     
@@ -168,15 +177,17 @@ function config_for_tvos() {
     export AR=$(xcrun -sdk $XCRUN_SDK -find ar)
     
     export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
-    export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mtvos-version-min=$DEPLOYMENT_TARGET_TVOS -fembed-bitcode \
-                    -I${CWD}/${BUILD_DIR}/tvOS/thin/${ARCH}/include"
-    export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -mtvos-version-min=$DEPLOYMENT_TARGET_TVOS \
-                    -L${CWD}/${BUILD_DIR}/tvOS/thin/${ARCH}/lib"
+    export CFLAGS="-isysroot $SDKPATH -target $target -arch $ARCH \
+                    -mtvos-version-min=$DEPLOYMENT_TARGET_TVOS -fembed-bitcode \
+                    -I${CWD}/${BUILD_DIR}/${BUILD_EXT}/${arch_name}/include"
+    export LDFLAGS="-isysroot $SDKPATH -target $target -arch $ARCH \
+                    -mtvos-version-min=$DEPLOYMENT_TARGET_TVOS \
+                    -L${CWD}/${BUILD_DIR}/${BUILD_EXT}/${arch_name}/lib"
     export CXXFLAGS="$CFLAGS"
     export CPPFLAGS="$CFLAGS"
     
-    export PKG_CONFIG_SYSROOT_DIR="${BUILD_DIR}/tvOS/thin"
-    export PKG_CONFIG_LIBDIR="$PKG_CONFIG_SYSROOT_DIR/$ARCH/lib/pkgconfig"
+    export PKG_CONFIG=pkg-config
+    export PKG_CONFIG_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${arch_name}/lib/pkgconfig"
     
     ensure_build_dir
 }

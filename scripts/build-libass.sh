@@ -25,7 +25,7 @@ cd "$SCRATCH"
 config_guess=$ROOT_DIR/$SOURCE/config.guess
 build=$($config_guess)
 
-if [ "$ARCH" = "arm64" ]
+if [ "$ARCH" = "arm64" -o "$ARCH" = "arm64-simulator" ]
 then
     host="arm-apple-darwin"
 else

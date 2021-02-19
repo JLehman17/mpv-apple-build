@@ -28,13 +28,6 @@ cwd=$(pwd)
 ARCH="${ARCH}"
 ARCH_OPTIONS="-DARCH_X86_64=0 -DENABLE_SSE=0 -DENABLE_SSE2=0 -DENABLE_SSE3=0 -DENABLE_SSE4_1=0 -DENABLE_SSE4_2=0 -DENABLE_MMX=0 -DCONFIG_OS_SUPPORT=0 -DCONFIG_RUNTIME_CPU_DETECT=0"
 
-#    export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH"
-#    export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
-#    export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mios-version-min=$DEPLOYMENT_TARGET -fembed-bitcode \
-#                    -I$CWD/build/release/libs-iOS/include"
-#    export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -Wl,-ios_version_min,$DEPLOYMENT_TARGET -lbz2 \
-#                    -L$CWD/build/release/libs-iOS/$ARCH"
-
 XCRUN_SDK=`echo $PLATFORM | tr '[:upper:]' '[:lower:]'`
 SYSROOT=$(xcrun --sdk $XCRUN_SDK --show-sdk-path)
 CC="xcrun -sdk $XCRUN_SDK clang -isysroot=$SYSROOT"
