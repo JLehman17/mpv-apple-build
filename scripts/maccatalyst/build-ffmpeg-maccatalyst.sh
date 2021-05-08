@@ -60,6 +60,8 @@ function download_deps() {
     fi
 }
 
+enable_all_decoders="y"
+
 CONFIGURE_FLAGS=" \
 --enable-cross-compile \
 --disable-ffplay \
@@ -73,15 +75,19 @@ CONFIGURE_FLAGS=" \
 --enable-static \
 --enable-gpl \
 --enable-videotoolbox \
---disable-decoder=dca \
---disable-decoder=mlp \
---disable-decoder=truehd \
 --disable-filters \
 --disable-asm \
 --disable-libaom \
 --enable-libzvbi
 "
 
+if [ ! "$enable_all_decoders" ]
+then
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS \
+--disable-decoder=dca \
+--disable-decoder=mlp \
+--disable-decoder=truehd"
+fi
 
 if [ "$DEBUG" ]
 then

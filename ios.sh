@@ -14,10 +14,10 @@ DEPS=(
 #    zvbi
 #    freetype
 #    fribidi
-    harfbuzz
+#    harfbuzz
 #    libass
 #    ffmpeg
-#    mpv
+    mpv
 )
 
 ARCHS=(

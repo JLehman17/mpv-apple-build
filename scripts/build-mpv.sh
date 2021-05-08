@@ -9,14 +9,14 @@ ARCH=$1
 #else
 #    MPV_VERSION="0.32.0"
 #fi
-MPV_VERSION="0.32.0"
+MPV_VERSION="master"
 SOURCE="src/mpv-$MPV_VERSION-$BUILD_EXT"
 
 BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/mpv"
 SCRATCH=$BUILD_OUT/"build"
 PREFIX=$ROOT_DIR/$BUILD_OUT
 
-DEBUG="-d"
+DEBUG="y"
 while getopts d option
 do
     case "${option}" in
@@ -26,7 +26,22 @@ do
     esac
 done
 
-if [ ! -r $SOURCE ]
+if [ "$BUILD_EXT" == "maccatalyst" ]
+then
+#    MPV_VERSION="vulkan"
+    MPV_VERSION="moltenvk"
+    SOURCE="src/mpv-$MPV_VERSION-$BUILD_EXT"
+    if [ ! -r $SOURCE ]; then
+    
+        git clone "https://github.com/tmm1/mpv-player.git" $SOURCE
+#        git clone "https://github.com/Akemi/mpv.git" $SOURCE
+        cd $ROOT_DIR/$SOURCE
+#        git checkout mac_vulkan
+        git checkout moltenvk
+        ./bootstrap.py
+        cd $ROOT_DIR
+    fi
+elif [ ! -r $SOURCE ]
 then
     echo 'mpv source not found. Trying to download...'
 

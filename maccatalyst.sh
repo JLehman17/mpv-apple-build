@@ -16,13 +16,15 @@ DEPS=(
 #    harfbuzz
 #    fribidi
 #    libass
-#    ffmpeg
+    ffmpeg
+#    moltenvk
+#    libplacebo
 #    mpv
 )
 
 ARCHS=(
     x86_64
-    arm64
+#    arm64
 )
 
 echo "Starting Build $(date)" | tee ${LOG}
@@ -31,7 +33,7 @@ for DEP in ${DEPS[@]}
 do
     cd ${CWD}
 
-    SCRIPT_PATH="scripts/${BUILD_EXT}/build-${DEP}-${BUILD_EXT}.sh"
+    SCRIPT_PATH="scripts/build-${DEP}.sh"
     for ARCH in ${ARCHS[@]}
     do
         echo "Building library ${DEP} for ${ARCH}" | tee -a ${LOG}

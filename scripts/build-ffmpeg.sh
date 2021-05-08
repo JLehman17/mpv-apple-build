@@ -1,10 +1,12 @@
 #!/bin/sh
 
 # directories
-FF_VERSION="4.3.1"
+FF_VERSION="4.2.1"
+# maccatlyst version is FF_VERSION="4.2.1"
 SOURCE="src/ffmpeg-$FF_VERSION"
 
 DEBUG=
+enable_all_decoders="y"
 
 while getopts d option
     do
@@ -77,15 +79,21 @@ CONFIGURE_FLAGS=" \
 --disable-shared \
 --enable-static \
 --enable-gpl \
---disable-decoder=dca \
---disable-decoder=mlp \
---disable-decoder=truehd \
 --disable-filters \
 --disable-librubberband \
 --disable-libzimg \
 --disable-libbluray \
 --disable-vapoursynth \
 "
+
+if [ ! "$enable_all_decoders" ]
+then
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS \
+--disable-decoder=dca \
+--disable-decoder=mlp \
+--disable-decoder=truehd"
+fi
+
 
 
 if [ "$DEBUG" ]
