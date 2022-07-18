@@ -10,14 +10,14 @@ CWD=$(pwd)
 LOG="${CWD}/${BUILD_DIR}/${BUILD_EXT}/build.log"
 FAT="${BUILD_DIR}/${BUILD_EXT}/lib"
 DEPS=(
-#    ffmpeg
-    mpv
+    ffmpeg
+#    mpv
 )
 
 ARCHS=(
     armv7k
     arm64_32
-    x86_64
+#    x86_64
 )
 
 echo "Starting Build $(date)" | tee ${LOG}
@@ -47,7 +47,7 @@ fi
 LIPO_ARCHS=(
     armv7k
     arm64_32
-    x86_64
+#    x86_64
 )
 
 arch_0=${LIPO_ARCHS[0]}

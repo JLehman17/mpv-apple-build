@@ -1,10 +1,12 @@
 #!/bin/sh
 
 set -e
+# -u Attempt to use undefined variable outputs error message, and forces an exit
+set -u
 
 source config.sh
 
-config_for_ios
+export BUILD_EXT="ios"
 
 CWD=$(pwd)
 LOG="${CWD}/${BUILD_DIR}/${BUILD_EXT}/build.log"
@@ -16,8 +18,9 @@ DEPS=(
 #    fribidi
 #    harfbuzz
 #    libass
-#    ffmpeg
-    mpv
+#    openssl
+    ffmpeg
+#    mpv
 )
 
 ARCHS=(
@@ -25,7 +28,7 @@ ARCHS=(
 #    x86_64
 )
 
-LIPO=
+LIPO=y
 
 echo "Starting Build $(date)" | tee ${LOG}
 

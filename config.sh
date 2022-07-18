@@ -3,9 +3,9 @@
 export BUILD_DIR="build/release"
 CWD=`pwd`
 
-DEPLOYMENT_TARGET_IOS="11.0.0"
-DEPLOYMENT_TARGET_TVOS="14.0.0"
-DEPLOYMENT_TARGET_WATCHOS="7.0.0"
+export DEPLOYMENT_TARGET_IOS="11.0.0"
+export DEPLOYMENT_TARGET_TVOS="14.0.0"
+export DEPLOYMENT_TARGET_WATCHOS="7.0.0"
 
 XCODE_PATH=$(xcode-select -p)
 export PATH="/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/:$PATH"
@@ -20,7 +20,6 @@ export ROOT_DIR=$CWD
 function config_for_ios() {
 
     local ARCH=$1
-    export BUILD_EXT="ios"
     
     if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]
     then
@@ -92,11 +91,10 @@ function config_for_maccatalyst() {
     then
         target="arm64-apple-ios14.0-macabi"
     else
-        target="x86_64-apple-ios13.0-macabi"
+        target="x86_64-apple-ios13.1-macabi"
     fi
 
     export PLATFORM="macosx"
-    export BUILD_EXT="maccatalyst"
     
     export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
     
@@ -151,7 +149,7 @@ function config_for_tvos() {
     
     local ARCH=$1
     local arch_name=$ARCH
-    export BUILD_EXT="tvOS"
+    export BUILD_EXT="tvos"
     
     if [ "$ARCH" = "arm64-simulator" -o "$ARCH" = "x86_64" ]
     then

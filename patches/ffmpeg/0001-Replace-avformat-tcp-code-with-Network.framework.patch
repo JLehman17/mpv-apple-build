@@ -1,0 +1,260 @@
+From 16e5188ec8a93f43f75c2ae09eeb47c0c22b9a16 Mon Sep 17 00:00:00 2001
+From: Josh Lehman <joshlehman01@gmail.com>
+Date: Wed, 20 Jan 2021 14:02:32 -0500
+Subject: [PATCH] Replace avformat tcp code with Network.framework
+
+---
+ FFmpeg/libavformat/tcp.c | 160 ++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 141 insertions(+), 19 deletions(-)
+
+diff --git a/FFmpeg/libavformat/tcp.c b/FFmpeg/libavformat/tcp.c
+index 2198e0f..bd4cccc 100644
+--- a/FFmpeg/libavformat/tcp.c
++++ b/FFmpeg/libavformat/tcp.c
+@@ -31,6 +31,9 @@
+ #if HAVE_POLL_H
+ #include <poll.h>
+ #endif
++#include <Network/Network.h>
++
++#define DEFAULT_TCP_TIMEOUT 5000000
+ 
+ typedef struct TCPContext {
+     const AVClass *class;
+@@ -42,6 +45,8 @@ typedef struct TCPContext {
+     int recv_buffer_size;
+     int send_buffer_size;
+     int tcp_nodelay;
++    nw_connection_t connection;
++    dispatch_queue_t dispatch_queue;
+ #if !HAVE_WINSOCK2_H
+     int tcp_mss;
+ #endif /* !HAVE_WINSOCK2_H */
+@@ -99,6 +104,62 @@ static void customize_fd(void *ctx, int fd)
+ #endif /* !HAVE_WINSOCK2_H */
+ }
+ 
++static int start_connection(URLContext *h, int timeout_us, nw_connection_t connection)
++{
++    TCPContext *s = h->priv_data;
++    
++    dispatch_queue_t dispatch_queue = dispatch_queue_create("tcp queue", DISPATCH_QUEUE_SERIAL);
++    nw_connection_set_queue(connection, dispatch_queue);
++    s->dispatch_queue = dispatch_queue;
++    
++    dispatch_group_t group = dispatch_group_create();
++
++    nw_endpoint_t remote = nw_connection_copy_endpoint(connection);
++    av_log(h, AV_LOG_VERBOSE, "Starting connection attempt to %s port %d\n",
++           nw_endpoint_get_hostname(remote), nw_endpoint_get_port(remote));
++    nw_release(remote);
++    
++    __block int ret = AVERROR(ETIMEDOUT);
++    nw_retain(connection); // Hold a reference until cancelled
++    dispatch_group_enter(group);
++    nw_connection_set_state_changed_handler(connection, ^(nw_connection_state_t state, nw_error_t error) {
++        nw_endpoint_t remote = nw_connection_copy_endpoint(connection);
++        if (error) {
++            ret = AVERROR(nw_error_get_error_code(error));
++        }
++        if (state == nw_connection_state_waiting) {
++            av_log(h, AV_LOG_VERBOSE, "connect to %s port %u failed, is waiting for a usable network",
++                                        nw_endpoint_get_hostname(remote), nw_endpoint_get_port(remote));
++        } else if (state == nw_connection_state_failed || state == nw_connection_state_cancelled) {
++            av_log(h, AV_LOG_VERBOSE, "Connection attempt to %s port %u "
++                                      "failed: %d\n", nw_endpoint_get_hostname(remote),
++                                        nw_endpoint_get_port(remote), ret);
++            nw_release(connection);
++            s->connection = NULL;
++            s->dispatch_queue = NULL;
++            dispatch_release(dispatch_queue);
++            dispatch_group_leave(group);
++        } else if (state == nw_connection_state_ready) {
++            av_log(h, AV_LOG_VERBOSE, "Successfully connected to %s port %u\n",
++                                        nw_endpoint_get_hostname(remote), nw_endpoint_get_port(remote));
++            ret = 0;
++            dispatch_group_leave(group);
++        }
++        nw_release(remote);
++    });
++
++    nw_connection_start(connection);
++    
++    if (timeout_us <= 0) {
++        timeout_us = DEFAULT_TCP_TIMEOUT;
++    }
++    dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout_us * NSEC_PER_USEC)));
++    nw_connection_set_state_changed_handler(connection, NULL);
++    dispatch_release(group);
++    
++    return ret;
++}
++
+ /* return non zero if error */
+ static int tcp_open(URLContext *h, const char *uri, int flags)
+ {
+@@ -168,6 +229,16 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
+     }
+ #endif
+ 
++    nw_endpoint_t endpoint = nw_endpoint_create_host(hostname, portstr);
++    
++    nw_parameters_configure_protocol_block_t configure_tls = NW_PARAMETERS_DISABLE_PROTOCOL;
++    nw_parameters_t parameters =
++        nw_parameters_create_secure_tcp(configure_tls, NW_PARAMETERS_DEFAULT_CONFIGURATION);
++    
++    nw_connection_t connection = nw_connection_create(endpoint, parameters);
++    nw_release(endpoint);
++    nw_release(parameters);
++    
+     if (s->listen > 0) {
+         while (cur_ai && fd < 0) {
+             fd = ff_socket(cur_ai->ai_family,
+@@ -195,13 +266,14 @@ static int tcp_open(URLContext *h, const char *uri, int flags)
+         // Socket descriptor already closed here. Safe to overwrite to client one.
+         fd = ret;
+     } else {
+-        ret = ff_connect_parallel(ai, s->open_timeout / 1000, 3, h, &fd, customize_fd, s);
++        ret = start_connection(h, s->open_timeout, connection);
+         if (ret < 0)
+             goto fail1;
+     }
+ 
+     h->is_streamed = 1;
+     s->fd = fd;
++    s->connection = connection;
+ 
+     freeaddrinfo(ai);
+     return 0;
+@@ -234,37 +306,75 @@ static int tcp_accept(URLContext *s, URLContext **c)
+ static int tcp_read(URLContext *h, uint8_t *buf, int size)
+ {
+     TCPContext *s = h->priv_data;
+-    int ret;
++    __block int ret;
++    dispatch_group_t group = dispatch_group_create();
+ 
+-    if (!(h->flags & AVIO_FLAG_NONBLOCK)) {
+-        ret = ff_network_wait_fd_timeout(s->fd, 0, h->rw_timeout, &h->interrupt_callback);
+-        if (ret)
+-            return ret;
++    dispatch_group_enter(group);
++    nw_connection_receive(s->connection, 1, size, ^(dispatch_data_t  _Nullable content,
++                                                    nw_content_context_t  _Nullable context,
++                                                    bool is_complete,
++                                                    nw_error_t  _Nullable error) {
++        if (error) {
++            ret = AVERROR(nw_error_get_error_code(error));
++            dispatch_group_leave(group);
++            return;
++        }
++        ret = dispatch_data_get_size(content);
++        __block uint8_t *ptr = buf;
++        dispatch_data_apply(content, ^bool(dispatch_data_t  _Nonnull region, size_t offset, const void * _Nonnull buffer, size_t size) {
++            memcpy(ptr, buffer, size);
++            ptr += size;
++            if (offset + size >= ret) {
++                dispatch_group_leave(group);
++            }
++            return true;
++        });
++    });
++    
++    int64_t timeout_us = h->rw_timeout;
++    if (timeout_us <= 0) {
++        timeout_us = DEFAULT_TCP_TIMEOUT;
+     }
+-    ret = recv(s->fd, buf, size, 0);
+-    if (ret == 0)
+-        return AVERROR_EOF;
+-    return ret < 0 ? ff_neterrno() : ret;
++    dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout_us * NSEC_PER_USEC)));
++    dispatch_release(group);
++    
++    return ret;
+ }
+ 
+ static int tcp_write(URLContext *h, const uint8_t *buf, int size)
+ {
+     TCPContext *s = h->priv_data;
+-    int ret;
++    __block int ret = -1;
++    dispatch_group_t group = dispatch_group_create();
+ 
+-    if (!(h->flags & AVIO_FLAG_NONBLOCK)) {
+-        ret = ff_network_wait_fd_timeout(s->fd, 1, h->rw_timeout, &h->interrupt_callback);
+-        if (ret)
+-            return ret;
++    dispatch_data_t write_data = dispatch_data_create(buf, size, nil, DISPATCH_DATA_DESTRUCTOR_FREE);
++    dispatch_group_enter(group);
++    nw_connection_send(s->connection,
++                       write_data,
++                       NW_CONNECTION_DEFAULT_MESSAGE_CONTEXT,
++                       true,
++                       ^(nw_error_t  _Nullable error) {
++        ret = error ? AVERROR(nw_error_get_error_code(error)) : size;
++        dispatch_group_leave(group);
++    });
++    
++    int64_t timeout_us = h->rw_timeout;
++    if (timeout_us <= 0) {
++        timeout_us = DEFAULT_TCP_TIMEOUT;
+     }
+-    ret = send(s->fd, buf, size, MSG_NOSIGNAL);
+-    return ret < 0 ? ff_neterrno() : ret;
++    dispatch_group_wait(group, dispatch_time(DISPATCH_TIME_NOW, (int64_t)(timeout_us * NSEC_PER_USEC)));
++    dispatch_release(group);
++    
++    return ret;
+ }
+ 
+ static int tcp_shutdown(URLContext *h, int flags)
+ {
+     TCPContext *s = h->priv_data;
+     int how;
++    
++    // TODO: cleanup
++//    dispatch_release(dispatch_queue);
+ 
+     if (flags & AVIO_FLAG_WRITE && flags & AVIO_FLAG_READ) {
+         how = SHUT_RDWR;
+@@ -280,7 +390,14 @@ static int tcp_shutdown(URLContext *h, int flags)
+ static int tcp_close(URLContext *h)
+ {
+     TCPContext *s = h->priv_data;
+-    closesocket(s->fd);
++    if (s->connection) {
++        nw_release(s->connection);
++        s->connection = NULL;
++    }
++    if (s->dispatch_queue) {
++        dispatch_release(s->dispatch_queue);
++        s->dispatch_queue = NULL;
++    }
+     return 0;
+ }
+ 
+@@ -292,6 +409,11 @@ static int tcp_get_file_handle(URLContext *h)
+ 
+ static int tcp_get_window_size(URLContext *h)
+ {
++    // TODO: How to do this for Network.framework?
++    // For now it's okay to return -1 or remove url_get_short_seek callback
++    // and aviobuf.c will fall back to SHORT_SEEK_THRESHOLD.
++    return -1;
++    
+     TCPContext *s = h->priv_data;
+     int avail;
+     socklen_t avail_len = sizeof(avail);
+@@ -318,7 +440,7 @@ const URLProtocol ff_tcp_protocol = {
+     .url_write           = tcp_write,
+     .url_close           = tcp_close,
+     .url_get_file_handle = tcp_get_file_handle,
+-    .url_get_short_seek  = tcp_get_window_size,
++//    .url_get_short_seek  = tcp_get_window_size,
+     .url_shutdown        = tcp_shutdown,
+     .priv_data_size      = sizeof(TCPContext),
+     .flags               = URL_PROTOCOL_FLAG_NETWORK,
+-- 
+2.24.3 (Apple Git-128)
+

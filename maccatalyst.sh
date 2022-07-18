@@ -1,10 +1,11 @@
 #!/bin/sh
 
 set -e
+set -u
 
 source config.sh
 
-config_for_maccatalyst
+export BUILD_EXT="maccatalyst"
 
 CWD=$(pwd)
 LOG="${CWD}/${BUILD_DIR}/${BUILD_EXT}/build.log"
@@ -16,6 +17,7 @@ DEPS=(
 #    harfbuzz
 #    fribidi
 #    libass
+#    openssl
     ffmpeg
 #    moltenvk
 #    libplacebo

@@ -25,7 +25,14 @@ do
     lib_name="${filename%.*}"
     for platform in ${PLATFORMS[@]}
     do
-        framework_arguments="$framework_arguments -library ${BUILD_DIR}/${platform}/lib/${filename}"
+        file="${BUILD_DIR}/${platform}/lib/${filename}"
+        filepath="${ROOT_DIR}/${file}"
+        if [ -f $filepath ]
+        then
+            framework_arguments="$framework_arguments -library ${file}"
+        else
+            echo "Couldn't find file ${filepath}"
+        fi
     done
     
     echo "Creating xcframwork for ${lib}"

@@ -1,0 +1,10 @@
+--- ./wscript_build_orig.py	2022-03-02 13:46:49.000000000 -0500
++++ ./wscript_build.py	2022-03-02 13:39:25.000000000 -0500
+@@ -209,6 +209,7 @@
+     ])
+ 
+     subprocess_c = ctx.pick_first_matching_dep([
++        ( "osdep/subprocess-dummy.c",            "tvos" ),
+         ( "osdep/subprocess-posix.c",            "posix" ),
+         ( "osdep/subprocess-win.c",              "win32-desktop" ),
+         ( "osdep/subprocess-dummy.c" ),

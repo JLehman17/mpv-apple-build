@@ -2,6 +2,7 @@
 
 # directories
 FF_VERSION="4.2.1"
+# watchos version is FF_VERSION="4.2.1-watchos"
 # maccatlyst version is FF_VERSION="4.2.1"
 SOURCE="src/ffmpeg-$FF_VERSION"
 
@@ -24,6 +25,8 @@ SCRATCH=$BUILD_OUT/"build"
 PREFIX=$ROOT_DIR/$BUILD_OUT
 
 PATCHES=$ROOT_DIR/patches/ffmpeg
+
+CWD=`pwd`
 
 function download_deps() {
     if [ ! `which yasm` ]
@@ -58,9 +61,12 @@ function download_deps() {
         cp $patch ./ &&
         patch -p0 < "maccatalyst_tls_securetransport.c.patch" && rm "./maccatalyst_tls_securetransport.c.patch" || exit 1
         
-        patch="$PATCHES/watchos_configure.patch"
-        cp $patch ./ &&
-        patch -p0 < "watchos_configure.patch" && rm "./watchos_configure.patch" || exit 1
+        if [ "$BUILD_EXT" == "watchos" ]
+        then
+            patch="$PATCHES/watchos_configure.patch"
+            cp $patch ./ &&
+            patch -p0 < "watchos_configure.patch" && rm "./watchos_configure.patch" || exit 1
+        fi
 
         cd $ROOT_DIR
     fi
@@ -73,18 +79,32 @@ CONFIGURE_FLAGS=" \
 --disable-programs \
 --disable-postproc \
 --disable-indev=avfoundation \
+--disable-indev=libndi_newtek \
+--disable-outdev=libndi_newtek \
 --disable-doc \
 --disable-symver \
 --enable-pic \
 --disable-shared \
 --enable-static \
 --enable-gpl \
+--enable-nonfree \
 --disable-filters \
 --disable-librubberband \
 --disable-libzimg \
 --disable-libbluray \
 --disable-vapoursynth \
 "
+
+openssl="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib/libssl.a"
+if [ -f $openssl ]
+then
+    echo "Configuring with OpenSSL instead of SecureTransport."
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS \
+--enable-openssl \
+--disable-securetransport"
+else
+    echo "Could not find an OpenSSL Build at ${openssl}"
+fi
 
 if [ ! "$enable_all_decoders" ]
 then
@@ -105,11 +125,7 @@ fi
 
 if [ "$BUILD_EXT" == "watchos" ]
 then
-    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-libass --disable-libaom"
-    if [ "$ARCH" == "arm64_32" ]
-    then
-        CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-asm"
-    fi
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-libass --disable-libaom --disable-asm"
 elif [ "$BUILD_EXT" == "maccatalyst" ]
 then
     CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-libaom --disable-asm --enable-libzvbi --enable-videotoolbox"
@@ -120,8 +136,6 @@ fi
 echo $CONFIGURE_FLAGS
 
 download_deps
-
-CWD=`pwd`
 
 echo "building..."
 mkdir -p "$SCRATCH"

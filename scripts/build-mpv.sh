@@ -9,7 +9,7 @@ ARCH=$1
 #else
 #    MPV_VERSION="0.32.0"
 #fi
-MPV_VERSION="master"
+MPV_VERSION="0.34.1"
 SOURCE="src/mpv-$MPV_VERSION-$BUILD_EXT"
 
 BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/mpv"
@@ -26,7 +26,9 @@ do
     esac
 done
 
-if [ "$BUILD_EXT" == "maccatalyst" ]
+VULKAN_TEST=
+
+if [ "$VULKAN_TEST" ]
 then
 #    MPV_VERSION="vulkan"
     MPV_VERSION="moltenvk"
