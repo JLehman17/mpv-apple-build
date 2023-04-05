@@ -114,7 +114,17 @@ then
 --disable-decoder=truehd"
 fi
 
+if [ "$BUILD_EXT" == "ios" -o "$BUILD_EXT" == "maccatalyst" ]
+then
+    # audiotoolbox.m currently doesn't compile for iOS.
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS \
+--disable-outdev=audiotoolbox \
+--disable-libxcb \
+--disable-libxcb-shm \
+--disable-libxcb-xfixes \
+--disable-libxcb-shape"
 
+fi
 
 if [ "$DEBUG" ]
 then
@@ -128,9 +138,9 @@ then
     CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-libass --disable-libaom --disable-asm"
 elif [ "$BUILD_EXT" == "maccatalyst" ]
 then
-    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-libaom --disable-asm --enable-libzvbi --enable-videotoolbox"
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-libaom --disable-asm --enable-libzvbi --enable-videotoolbox"
 else
-    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-libzvbi --enable-videotoolbox"
+    CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-libaom --enable-libzvbi --enable-videotoolbox"
 fi
 
 echo $CONFIGURE_FLAGS
@@ -166,8 +176,8 @@ TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
     --incdir=$CWD/$BUILD_DIR/$BUILD_EXT/${ARCH}/include \
 || exit 1
 
-# make clean
- make -j4 install || exit 1
+make clean
+make -j4 install || exit 1
 cd $CWD
 
 echo Done
