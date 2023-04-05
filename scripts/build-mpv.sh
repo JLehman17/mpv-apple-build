@@ -9,7 +9,7 @@ ARCH=$1
 #else
 #    MPV_VERSION="0.32.0"
 #fi
-MPV_VERSION="0.34.1"
+MPV_VERSION="0.35.1"
 SOURCE="src/mpv-$MPV_VERSION-$BUILD_EXT"
 
 BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/mpv"
@@ -100,13 +100,13 @@ export LDFLAGS="$LDFLAGS -lbz2 -framework CoreAudio"
 
 echo "Configuring with options $CONFIGURE_FLAGS"
 
-python3 ./waf clean
 python3 ./waf configure $CONFIGURE_FLAGS \
     --prefix="$PREFIX" \
     --out="$PREFIX" \
     --libdir="$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/lib" \
     --includedir="$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/include" \
 || exit 1
+python3 ./waf clean
 python3 ./waf build -j6 || exit 1
 python3 ./waf install || exit 1
 
