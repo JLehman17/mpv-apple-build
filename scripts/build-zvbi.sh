@@ -37,6 +37,7 @@ CONFIGURE_FLAGS=" \
 --disable-shared \
 --disable-rpath \
 --without-doxygen \
+--without-x \
 --host=${host} \
 "
 
@@ -49,8 +50,7 @@ TMPDIR=${TMPDIR/%\/} $CWD/$SOURCE/configure \
     --includedir="$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/include" \
 || exit 1
 
-
- make -j4 install || exit 1
+make -j4 install || exit 1
 cd $CWD
 
 echo Done
