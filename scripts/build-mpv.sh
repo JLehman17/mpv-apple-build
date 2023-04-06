@@ -16,7 +16,7 @@ BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/mpv"
 SCRATCH=$BUILD_OUT/"build"
 PREFIX=$ROOT_DIR/$BUILD_OUT
 
-DEBUG="y"
+DEBUG=
 while getopts d option
 do
     case "${option}" in
@@ -27,6 +27,8 @@ do
 done
 
 VULKAN_TEST=
+
+PATCHES=$ROOT_DIR/patches
 
 if [ "$VULKAN_TEST" ]
 then
@@ -58,6 +60,16 @@ then
         tar xj -C $SOURCE --strip-components 1 || exit 1
 
     cd $ROOT_DIR/$SOURCE
+    
+    if [ "$BUILD_EXT" == "tvos" ]
+    then
+        echo "Applying tvOS wscript_build patch..."
+        cd $SOURCE
+        patch="$PATCHES/tvos_wscript_build.py.patch"
+        cp $patch ./ &&
+        patch -p0 < "tvos_wscript_build.py.patch" && rm "./tvos_wscript_build.py.patch" || exit 1
+    fi
+    
     ./bootstrap.py
     cd $ROOT_DIR
 fi
