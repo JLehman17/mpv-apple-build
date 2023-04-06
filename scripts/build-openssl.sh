@@ -61,8 +61,10 @@ fi
 if [[ "${BUILD_EXT}" == "tvos" ]]
 then
     # See https://github.com/openssl/openssl/issues/7607
-        CONFIGURE_FLAGS=" ${CONFIGURE_FLAGS} \
--DHAVE_FORK=0"
+    CONFIGURE_FLAGS=" ${CONFIGURE_FLAGS} \
+-DHAVE_FORK=0 \
+-no-asm \
+"
     pushd "${ROOT_DIR}/${SOURCE}"
     # Patch apps/... to not use fork() since it's not available on tvOS
     sed -i '' '1s;^;#define HAVE_FORK 0\n;' "./apps/speed.c"
