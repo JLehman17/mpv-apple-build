@@ -4,7 +4,7 @@
 DEPLOYMENT_TARGET="11.0.0"
 
 CWD=`pwd`
-SOURCE="src/aom"
+SOURCE="src/aom-${BUILD_EXT}"
 ARCH=$1
 
 root=$(pwd)
@@ -13,8 +13,7 @@ function downloadDeps() {
     if [ ! -r $SOURCE ]
     then
         echo 'aom source not found. Trying to download...'
-        cd src
-        git clone https://aomedia.googlesource.com/aom
+        git clone https://aomedia.googlesource.com/aom $SOURCE
         cd $ROOT_DIR
     fi
 }
@@ -37,8 +36,27 @@ AS="$CC"
 CXXFLAGS="$CFLAGS"
 LDFLAGS="$CFLAGS"
 
-cp "$root/tools/aom/libaom.${ARCH}-mac-catalyst.cmake" "build/cmake/toolchains/"
-TOOLCHAIN_FILE="build/cmake/toolchains/libaom.${ARCH}-mac-catalyst.cmake"
+if [ "$ARCH" = "arm64" -o "$ARCH" = "arm64-simulator" ]
+then
+    real_arch="arm64"
+else
+    real_arch=$ARCH
+fi
+
+# Copy toolchain files
+
+cp "$root/tools/aom/arm-tvos-common.cmake" "build/cmake/toolchains/"
+cp "$root/tools/aom/tvos-simulator-common.cmake" "build/cmake/toolchains/"
+
+if [ "$BUILD_EXT" == "maccatalyst" ]
+then
+    cp "$root/tools/aom/libaom.${ARCH}-mac-catalyst.cmake" "build/cmake/toolchains/"
+    TOOLCHAIN_FILE="build/cmake/toolchains/libaom.${ARCH}-mac-catalyst.cmake"
+elif [ "$BUILD_EXT" == "tvos" ]
+then
+    cp "$root/tools/aom/${real_arch}-tvos-simulator.cmake" "build/cmake/toolchains/"
+    TOOLCHAIN_FILE="build/cmake/toolchains/${real_arch}-tvos-simulator.cmake"
+fi
 
 build="${cwd}/cmake-build"
 scratch="${build}/scratch/${ARCH}"
