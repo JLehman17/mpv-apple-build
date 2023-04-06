@@ -20,6 +20,7 @@ export ROOT_DIR=$CWD
 function config_for_ios() {
 
     local ARCH=$1
+    export BUILD_EXT="ios"
     
     if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]
     then

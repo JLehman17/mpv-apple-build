@@ -1,34 +1,33 @@
 #!/bin/sh
 
 set -e
-# -u Attempt to use undefined variable outputs error message, and forces an exit
-set -u
+set -o pipefail
 
 source config.sh
 
-export BUILD_EXT="ios"
+config_for_ios
 
 CWD=$(pwd)
 LOG="${CWD}/${BUILD_DIR}/${BUILD_EXT}/build.log"
 FAT="${BUILD_DIR}/${BUILD_EXT}/lib"
 DEPS=(
-#    aom
-#    zvbi
-#    freetype
-#    fribidi
-#    harfbuzz
-#    libass
-#    openssl
+    aom
+    zvbi
+    freetype
+    fribidi
+    harfbuzz
+    libass
+    openssl
     ffmpeg
-#    mpv
+    mpv
 )
 
 ARCHS=(
     arm64
-#    x86_64
+    x86_64
 )
 
-LIPO=y
+LIPO=
 
 echo "Starting Build $(date)" | tee ${LOG}
 
@@ -43,24 +42,25 @@ do
         
         config_for_ios $ARCH
         ${SCRIPT_PATH} $ARCH 2>&1 | tee -a ${LOG}
+        [ "$?" != 0 ] && exit $?
     done
 
 done
 
-echo "Building fat libraries..." | tee -a ${LOG}
-
-if [ ! -r $FAT ]
-then
-    mkdir $FAT
-fi
-
-LIPO_ARCHS=(
-    arm64
-    x86_64
-)
-
 if [ "$LIPO" ]
 then
+    echo "Building fat libraries..." | tee -a ${LOG}
+
+    if [ ! -r $FAT ]
+    then
+        mkdir $FAT
+    fi
+
+    LIPO_ARCHS=(
+        arm64
+        x86_64
+    )
+
     arch_0=${LIPO_ARCHS[0]}
 
     for lib in $(ls ${BUILD_DIR}/${BUILD_EXT}/${arch_0}/lib/*.a)
