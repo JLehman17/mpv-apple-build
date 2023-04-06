@@ -2,10 +2,8 @@
 
 set -e
 
-source config.sh
-
 function usage() {
-    echo "Supply the path to a directory that contains fat libraries"
+    echo "Converts static fat libraries to XCFrameworks. Supply the path to a directory that contains fat libraries."
     exit 1
 }
 
@@ -35,7 +33,7 @@ thin="${dir}/thin"
 for lib in $(ls ${dir}/*.a)
 do
     lib_name=$(basename $lib .a)
-    echo "Converting ${lib_name}"
+    echo "Thinning ${lib_name}"
     for arch in $(list_archs $lib)
     do
         # Extract architectures
@@ -45,9 +43,9 @@ do
     done
 done
 
-# watchOS archs arm64_32 and armv7k must be in the same library
 for lib_name in $(ls "${thin}")
 do
+    # watchOS archs arm64_32 and armv7k must be in the same library
     if [ -d "${thin}/${lib_name}/arm64_32" ] && [ -d "${thin}/${lib_name}/armv7k" ]
     then
         thin_arch="${thin}/${lib_name}/armv7k_arm64_32"
@@ -57,8 +55,19 @@ do
         rm -r "${thin}/${lib_name}/arm64_32"
         rm -r "${thin}/${lib_name}/armv7k"
     fi
-done
     
+    # arm64-simulator and x86_64 libs also need to be lipo'd in order to create an xcframework
+    if [ -d "${thin}/${lib_name}/arm64-simulator" ] && [ -d "${thin}/${lib_name}/x86_64" ]
+    then
+        thin_arch="${thin}/${lib_name}/x86_64_arm64-simulator"
+        mkdir -p $thin_arch
+        lipo -create "${thin}/${lib_name}/arm64-simulator/${lib_name}.a" "${thin}/${lib_name}/x86_64/${lib_name}.a" \
+            -o "${thin}/${lib_name}/x86_64_arm64-simulator/${lib_name}.a"
+        rm -r "${thin}/${lib_name}/x86_64"
+        rm -r "${thin}/${lib_name}/arm64-simulator"
+    fi
+done
+
 for lib_name in $(ls "${thin}")
 do
     # Create .xcframework
