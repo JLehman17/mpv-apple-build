@@ -43,19 +43,41 @@ else
     real_arch=$ARCH
 fi
 
+# TODO: Support ios arm64 simulator builds
+if [ "$PLATFORM" == "iphonesimulator" -o "$PLATFORM" == "appletvsimulator" ]
+then
+    sim="-simulator"
+    ARCH_OPTIONS="-DARCH_X86_64=1 -DENABLE_SSE4_1=1 -DHAVE_SSE4_2=1"
+    
+elif [ "$PLATFORM" == "iphoneos" -o "$PLATFORM" == "appletvos" ]
+then
+    ARCH_OPTIONS="-DARCH_ARM=1 -DENABLE_NEON=1 -DHAVE_NEON=1"
+fi
+
 # Copy toolchain files
 
-cp "$root/tools/aom/arm-tvos-common.cmake" "build/cmake/toolchains/"
-cp "$root/tools/aom/tvos-simulator-common.cmake" "build/cmake/toolchains/"
-
-if [ "$BUILD_EXT" == "maccatalyst" ]
+if [ "$BUILD_EXT" == "ios" ]
+then
+    TOOLCHAIN_FILE="build/cmake/toolchains/${ARCH}-ios${sim}.cmake"
+    
+elif [ "$BUILD_EXT" == "maccatalyst" ]
 then
     cp "$root/tools/aom/libaom.${ARCH}-mac-catalyst.cmake" "build/cmake/toolchains/"
     TOOLCHAIN_FILE="build/cmake/toolchains/libaom.${ARCH}-mac-catalyst.cmake"
 elif [ "$BUILD_EXT" == "tvos" ]
 then
+    cp "$root/tools/aom/arm-tvos-common.cmake" "build/cmake/toolchains/"
+    cp "$root/tools/aom/tvos-simulator-common.cmake" "build/cmake/toolchains/"
+
     cp "$root/tools/aom/${real_arch}-tvos-simulator.cmake" "build/cmake/toolchains/"
-    TOOLCHAIN_FILE="build/cmake/toolchains/${real_arch}-tvos-simulator.cmake"
+    TOOLCHAIN_FILE="build/cmake/toolchains/${real_arch}-tvos${sim}.cmake"
+fi
+
+# clean
+cmake_build="${root}/${SOURCE}/cmake-build"
+if [ -d $cmake_build ]
+then
+    rm -r $cmake_build
 fi
 
 build="${cwd}/cmake-build"
