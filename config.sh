@@ -87,7 +87,7 @@ function config_for_watchos() {
 
 function config_for_maccatalyst() {
 
-    ARCH=$1
+    local ARCH=$1
     if [ "$ARCH" = "arm64" ]
     then
         target="arm64-apple-ios14.0-macabi"
@@ -95,6 +95,7 @@ function config_for_maccatalyst() {
         target="x86_64-apple-ios13.1-macabi"
     fi
 
+    export BUILD_EXT="maccatalyst"
     export PLATFORM="macosx"
     
     export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
@@ -120,7 +121,7 @@ function config_for_maccatalyst() {
 
 function config_for_macos() {
 
-    ARCH=$1
+    local ARCH=$1
 
     export PLATFORM="macosx"
     export BUILD_EXT="macos"

@@ -1,11 +1,11 @@
 #!/bin/sh
 
 set -e
-set -u
+set -o pipefail
 
 source config.sh
 
-export BUILD_EXT="maccatalyst"
+config_for_maccatalyst
 
 CWD=$(pwd)
 LOG="${CWD}/${BUILD_DIR}/${BUILD_EXT}/build.log"
@@ -18,16 +18,17 @@ DEPS=(
 #    fribidi
 #    libass
 #    openssl
-    ffmpeg
-#    moltenvk
-#    libplacebo
+#    ffmpeg
 #    mpv
 )
 
 ARCHS=(
+    arm64
     x86_64
-#    arm64
 )
+
+LIPO=y
+XCFRAMEWORK=
 
 echo "Starting Build $(date)" | tee ${LOG}
 
@@ -42,33 +43,39 @@ do
         
         config_for_maccatalyst $ARCH
         ${SCRIPT_PATH} $ARCH 2>&1 | tee -a ${LOG}
+        [ "$?" != 0 ] && exit $?
     done
 
 done
 
-echo "Building fat libraries..." | tee -a ${LOG}
+# Lipo
 
-if [ ! -r $FAT ]
+if [ "$LIPO" ]
 then
-    mkdir $FAT
-fi
+    echo "Building fat libraries..." | tee -a ${LOG}
 
-arch_0=${ARCHS[0]}
+    if [ ! -r $FAT ]
+    then
+        mkdir $FAT
+    fi
 
-for lib in $(ls ${BUILD_DIR}/${BUILD_EXT}/${arch_0}/lib/*.a)
-do
+    arch_0=${ARCHS[0]}
 
-    lipo_arguments=""
-    lib_name=$(basename $lib)
-    for ARCH in ${ARCHS[@]}
+    for lib in $(ls ${BUILD_DIR}/${BUILD_EXT}/${arch_0}/lib/*.a)
     do
-        lipo_arguments="${lipo_arguments} ${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib/${lib_name}"
+
+        lipo_arguments=""
+        lib_name=$(basename $lib)
+        for ARCH in ${ARCHS[@]}
+        do
+            lipo_arguments="${lipo_arguments} ${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib/${lib_name}"
+        done
+        
+        lipo -create \
+            $lipo_arguments \
+            -output "${FAT}/${lib_name}"
+        
     done
-    
-    lipo -create \
-        $lipo_arguments \
-        -output "${FAT}/${lib_name}"
-    
-done
+fi
 
 echo "Done"

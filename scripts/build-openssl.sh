@@ -45,6 +45,16 @@ then
     fi
 fi
 
+if [[ "$BUILD_EXT" == "maccatalyst" ]]
+then
+    if [ "$ARCH" = "arm64" ]
+    then
+        CONFIGURE_FLAGS="darwin64-arm64-cc -no-asm"
+    else
+        CONFIGURE_FLAGS="darwin64-x86_64-cc"
+    fi
+fi
+
 CONFIGURE_FLAGS=" ${CONFIGURE_FLAGS} \
 -no-shared \
 -no-module"
