@@ -1,37 +1,33 @@
 #!/bin/sh
 
-CWD=`pwd`
-BUILD="$CWD/build/release/libs-tvOS"
-INCLUDE_DIR="$CWD/build/release/libs-tvOS/arm64/include"
-ARM64_DIR="$CWD/build/release/libs-tvOS/arm64/"
-X86_64_DIR="$CWD/build/release/libs-tvOS/x86_64/"
+source config.sh
 
-FFMPEG_LIBS=(
-    libavcodec.a
-    libavdevice.a
-    libavfilter.a
-    libavformat.a
-    libavutil.a
-    libpostproc.a
-    libswresample.a
-    libswscale.a
-)
+OUTPUT="${ROOT_DIR}/extracted-fat"
 
-OTHER_LIBS=(
-#    libass.a
-#    libfreetype.a
-#    libfribidi.a
-#    libharfbuzz.a
-#    libmpv.a
-#    libzvbi.a
-    libaom.a
-)
+src="${ROOT_DIR}/extracted/"
 
-LIBS=("${FFMPEG_LIBS[@]}" "${OTHER_LIBS[@]}")
+echo "Building fat libraries..."
 
-set -e
+if [ ! -d $OUTPUT ]
+then
+    mkdir $OUTPUT
+fi
 
-for LIB in ${LIBS[@]}
+archs=$(ls ${src})
+arch_0=($archs)
+
+for lib in $(ls ${src}/${arch_0}/*.a)
 do
-    lipo -create $(find $BUILD/thin -name $LIB) -output $BUILD/lib/$LIB
+
+    lipo_arguments=""
+    lib_name=$(basename $lib)
+    for arch in ${archs[@]}
+    do
+        lipo_arguments="${lipo_arguments} ${src}/${arch}/${lib_name}"
+    done
+
+    lipo -create \
+        ${lipo_arguments} \
+        -output "${OUTPUT}/${lib_name}"
+    
 done
