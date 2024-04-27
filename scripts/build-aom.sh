@@ -70,6 +70,7 @@ then
     cp "$root/tools/aom/tvos-simulator-common.cmake" "build/cmake/toolchains/"
 
     cp "$root/tools/aom/${real_arch}-tvos-simulator.cmake" "build/cmake/toolchains/"
+    cp "$root/tools/aom/${real_arch}-tvos${sim}.cmake" "build/cmake/toolchains/"
     TOOLCHAIN_FILE="build/cmake/toolchains/${real_arch}-tvos${sim}.cmake"
 fi
 

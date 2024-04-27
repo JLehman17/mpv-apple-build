@@ -16,6 +16,7 @@ then
 fi
 
 export ROOT_DIR=$CWD
+export PATCHES=$ROOT_DIR/patches
 
 function config_for_ios() {
 
@@ -47,6 +48,10 @@ function config_for_ios() {
     
     export PKG_CONFIG=pkg-config
     export PKG_CONFIG_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib/pkgconfig"
+    
+    export LIBRARY_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib/"
+    export C_INCLUDE_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/include/"
+    export CPLUS_INCLUDE_PATH="${C_INCLUDE_PATH}"
     
     ensure_build_dir
 }
@@ -188,6 +193,10 @@ function config_for_tvos() {
     
     export PKG_CONFIG=pkg-config
     export PKG_CONFIG_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${arch_name}/lib/pkgconfig"
+
+    export LIBRARY_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${arch_name}/lib/"
+    export C_INCLUDE_PATH="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${arch_name}/include"
+    export CPLUS_INCLUDE_PATH="${C_INCLUDE_PATH}"
     
     ensure_build_dir
 }
