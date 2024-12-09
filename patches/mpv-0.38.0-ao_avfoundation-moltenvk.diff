@@ -1,0 +1,165 @@
+diff --color -x .DS_Store -r -p ./mpv-0.38.0-moltenvk/audio/out/ao_avfoundation.m ./mpv-0.38.0/audio/out/ao_avfoundation.m
+*** ./mpv-0.38.0-moltenvk/audio/out/ao_avfoundation.m	2024-04-24 16:35:18
+--- ./mpv-0.38.0/audio/out/ao_avfoundation.m	2024-04-24 16:51:13
+*************** static int init(struct ao *ao)
+*** 245,254 ****
+          MP_VERBOSE(ao, "dispatch_queue_create failed\n");
+          goto error;
+      }
+! 
+      if (ao->device && ao->device[0]) {
+          [p->renderer setAudioOutputDeviceUniqueID:(NSString*)cfstr_from_cstr(ao->device)];
+      }
+  
+      [p->synchronizer addRenderer:p->renderer];
+      if (@available(tvOS 14.5, iOS 14.5, macOS 11.3, *)) {
+--- 245,256 ----
+          MP_VERBOSE(ao, "dispatch_queue_create failed\n");
+          goto error;
+      }
+!     
+! #if !TARGET_OS_IPHONE
+      if (ao->device && ao->device[0]) {
+          [p->renderer setAudioOutputDeviceUniqueID:(NSString*)cfstr_from_cstr(ao->device)];
+      }
++ #endif
+  
+      [p->synchronizer addRenderer:p->renderer];
+      if (@available(tvOS 14.5, iOS 14.5, macOS 11.3, *)) {
+*************** const struct ao_driver audio_out_avfoundation = {
+*** 367,372 ****
+      .reset          = stop,
+      .start          = start,
+      .set_pause      = set_pause,
+-     .list_devs      = ca_get_device_list,
+      .priv_size      = sizeof(struct priv),
+  };
+--- 369,373 ----
+diff --color -x .DS_Store -r -p ./mpv-0.38.0-moltenvk/audio/out/ao_coreaudio_chmap.c ./mpv-0.38.0/audio/out/ao_coreaudio_chmap.c
+*** ./mpv-0.38.0-moltenvk/audio/out/ao_coreaudio_chmap.c	2024-04-24 16:36:01
+--- ./mpv-0.38.0/audio/out/ao_coreaudio_chmap.c	2024-04-24 16:53:19
+*************** AudioChannelLabel mp_speaker_id_to_ca_label(int speake
+*** 195,201 ****
+      return -1; // kAudioChannelLabel_Unknown
+  }
+  
+! #if HAVE_COREAUDIO
+  void ca_log_layout(struct ao *ao, int l, AudioChannelLayout *layout)
+  {
+      if (!mp_msg_test(ao->log, l))
+--- 195,201 ----
+      return -1; // kAudioChannelLabel_Unknown
+  }
+  
+! #if HAVE_AVFOUNDATION || HAVE_COREAUDIO
+  void ca_log_layout(struct ao *ao, int l, AudioChannelLayout *layout)
+  {
+      if (!mp_msg_test(ao->log, l))
+*************** coreaudio_error:
+*** 380,386 ****
+--- 380,388 ----
+      talloc_free(talloc_ctx);
+      return false;
+  }
++ #endif
+  
++ #if HAVE_COREAUDIO
+  static AudioChannelLayout* ca_query_layout(struct ao *ao,
+                                             AudioDeviceID device,
+                                             void *talloc_ctx)
+diff --color -x .DS_Store -r -p ./mpv-0.38.0-moltenvk/audio/out/ao_coreaudio_chmap.h ./mpv-0.38.0/audio/out/ao_coreaudio_chmap.h
+*** ./mpv-0.38.0-moltenvk/audio/out/ao_coreaudio_chmap.h	2024-04-24 16:36:01
+--- ./mpv-0.38.0/audio/out/ao_coreaudio_chmap.h	2024-04-24 16:50:32
+***************
+*** 21,39 ****
+  #include "config.h"
+  #include <AudioToolbox/AudioToolbox.h>
+  
+- #if HAVE_AVFOUNDATION || HAVE_AUDIOUNIT
+- #undef HAVE_COREAUDIO
+- #define HAVE_COREAUDIO 1
+- #endif
+- 
+  struct mp_chmap;
+  
+  int ca_label_to_mp_speaker_id(AudioChannelLabel label);
+  AudioChannelLabel mp_speaker_id_to_ca_label(int speaker_id);
+  
+! #if HAVE_COREAUDIO
+  AudioChannelLayout *ca_find_standard_layout(void *talloc_ctx, AudioChannelLayout *l);
+  void ca_log_layout(struct ao *ao, int l, AudioChannelLayout *layout);
+  bool ca_init_chmap(struct ao *ao, AudioDeviceID device);
+  void ca_get_active_chmap(struct ao *ao, AudioDeviceID device, int channel_count,
+                           struct mp_chmap *out_map);
+--- 21,37 ----
+  #include "config.h"
+  #include <AudioToolbox/AudioToolbox.h>
+  
+  struct mp_chmap;
+  
+  int ca_label_to_mp_speaker_id(AudioChannelLabel label);
+  AudioChannelLabel mp_speaker_id_to_ca_label(int speaker_id);
+  
+! #if HAVE_AVFOUNDATION || HAVE_COREAUDIO
+  AudioChannelLayout *ca_find_standard_layout(void *talloc_ctx, AudioChannelLayout *l);
+  void ca_log_layout(struct ao *ao, int l, AudioChannelLayout *layout);
++ #endif
++ 
++ #if HAVE_COREAUDIO
+  bool ca_init_chmap(struct ao *ao, AudioDeviceID device);
+  void ca_get_active_chmap(struct ao *ao, AudioDeviceID device, int channel_count,
+                           struct mp_chmap *out_map);
+diff --color -x .DS_Store -r -p ./mpv-0.38.0-moltenvk/audio/out/ao_coreaudio_properties.h ./mpv-0.38.0/audio/out/ao_coreaudio_properties.h
+*** ./mpv-0.38.0-moltenvk/audio/out/ao_coreaudio_properties.h	2024-04-24 16:36:01
+--- ./mpv-0.38.0/audio/out/ao_coreaudio_properties.h	2024-04-24 15:54:45
+***************
+*** 23,33 ****
+  
+  #include "internal.h"
+  
+- #if HAVE_AVFOUNDATION || HAVE_AUDIOUNIT
+- #undef HAVE_COREAUDIO
+- #define HAVE_COREAUDIO 1
+- #endif
+- 
+  // CoreAudio names are way too verbose
+  #define ca_sel    AudioObjectPropertySelector
+  #define ca_scope  AudioObjectPropertyScope
+--- 23,28 ----
+diff --color -x .DS_Store -r -p ./mpv-0.38.0-moltenvk/audio/out/ao_coreaudio_utils.h ./mpv-0.38.0/audio/out/ao_coreaudio_utils.h
+*** ./mpv-0.38.0-moltenvk/audio/out/ao_coreaudio_utils.h	2024-04-24 16:36:01
+--- ./mpv-0.38.0/audio/out/ao_coreaudio_utils.h	2024-04-24 16:57:25
+***************
+*** 29,39 ****
+  #include "internal.h"
+  #include "osdep/utils-mac.h"
+  
+- #if HAVE_AVFOUNDATION || HAVE_AUDIOUNIT
+- #undef HAVE_COREAUDIO
+- #define HAVE_COREAUDIO 1
+- #endif
+- 
+  bool check_ca_st(struct ao *ao, int level, OSStatus code, const char *message);
+  
+  #define CHECK_CA_ERROR_L(label, message) \
+--- 29,34 ----
+diff --color -x .DS_Store -r -p ./mpv-0.38.0-moltenvk/meson.build ./mpv-0.38.0/meson.build
+*** ./mpv-0.38.0-moltenvk/meson.build	2024-04-24 16:36:01
+--- ./mpv-0.38.0/meson.build	2024-04-24 16:58:03
+*************** if features['audiounit'] or features['coreaudio'] or f
+*** 820,826 ****
+  if features['audiounit'] or features['coreaudio'] or features['avfoundation']
+      sources += files('audio/out/ao_coreaudio_chmap.c',
+                       'audio/out/ao_coreaudio_utils.c',
+!                      'audio/out/ao_coreaudio_properties.c')
+  endif
+  
+  jack_opt = get_option('jack').require(
+--- 820,826 ----
+  if features['audiounit'] or features['coreaudio'] or features['avfoundation']
+      sources += files('audio/out/ao_coreaudio_chmap.c',
+                       'audio/out/ao_coreaudio_utils.c',
+!                      'osdep/utils-mac.c')
+  endif
+  
+  jack_opt = get_option('jack').require(

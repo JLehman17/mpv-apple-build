@@ -2,7 +2,7 @@
 
 ARCH=$1
 
-LIBASS_VERSION="0.14.0"
+LIBASS_VERSION="0.17.3"
 SOURCE="src/libass-$LIBASS_VERSION"
 
 BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/libass"
@@ -39,6 +39,7 @@ CONFIGURE_FLAGS=" \
 --disable-shared \
 --enable-static \
 --disable-fontconfig \
+--disable-libunibreak \
 --build=$build \
 --host=$host \
 "

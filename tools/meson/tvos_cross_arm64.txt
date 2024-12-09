@@ -1,0 +1,26 @@
+[binaries]
+c = ['clang', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk']
+cpp = ['clang++', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk']
+objc = ['clang', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk']
+objcpp = ['clang++', '-arch', 'arm64', '-isysroot', '/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS.sdk']
+ar = 'ar'
+strip = 'strip'
+
+[built-in options]
+c_args = ['-mtvos-version-min=12.0']
+cpp_args = ['-mtvos-version-min=12.0']
+c_link_args = ['-mtvos-version-min=12.0']
+cpp_link_args = ['-mtvos-version-min=12.0']
+objc_args = ['-mtvos-version-min=12.0']
+objcpp_args = ['-mtvos-version-min=12.0']
+
+[properties]
+root = '/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVOS.platform/Developer'
+
+[host_machine]
+system = 'darwin'
+subsystem = 'ios'
+kernel = 'xnu'
+cpu_family = 'aarch64'
+cpu = 'aarch64'
+endian = 'little'

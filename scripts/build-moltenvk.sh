@@ -2,14 +2,22 @@
 
 ARCH=$1
 
-VERSION="1.1.2"
+VERSION="1.2.8"
 SOURCE="src/moltenVK-$VERSION-$BUILD_EXT"
 
-BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/mpv"
-SCRATCH=$BUILD_OUT/"build"
-PREFIX=$ROOT_DIR/$BUILD_OUT
+BUILD_OUT="${ROOT_DIR}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/scratch/moltenVK"
+PREFIX="${ROOT_DIR}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}"
 
 echo "This script doesn't work. Don't know why. Run the commands on the command line instead."
+
+platform="$BUILD_EXT"
+if [ "$BUILD_EXT" == "tvos" ]
+then
+    platform="tvos"
+elif [ "$BUILD_EXT" == "maccatalyst" ]
+then
+    platform="maccat"
+fi
 
 if [ ! -r $SOURCE ]
 then
@@ -19,10 +27,10 @@ then
         tar xj -C $SOURCE --strip-components 1 || exit 1
         
     cd $ROOT_DIR/$SOURCE
-    ./fetchDependencies --maccat
+    ./fetchDependencies "--${platform}"
 fi
 
 cd $ROOT_DIR/$SOURCE
-make maccat || exit 1
+make "${platform}" || exit 1
 
 echo Done

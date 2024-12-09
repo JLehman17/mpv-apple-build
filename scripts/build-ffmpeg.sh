@@ -46,7 +46,7 @@ function download_deps() {
     then
         echo "FFmpeg source not found. Trying to download http://www.ffmpeg.org/releases/ffmpeg-$FF_VERSION.tar.bz2..."
         cd src
-        curl http://www.ffmpeg.org/releases/ffmpeg-$FF_VERSION.tar.bz2 | tar xj || exit 1
+        curl https://www.ffmpeg.org/releases/ffmpeg-$FF_VERSION.tar.bz2 | tar xj || exit 1
         
         cd $ROOT_DIR/$SOURCE
 
@@ -88,11 +88,15 @@ CONFIGURE_FLAGS=" \
 --enable-static \
 --enable-gpl \
 --enable-nonfree \
---disable-filters \
 --disable-librubberband \
 --disable-libzimg \
 --disable-libbluray \
 --disable-vapoursynth \
+--disable-filters \
+--enable-filter=hwupload \
+--enable-filter=apad \
+--enable-filter=bwdif \
+--enable-encoder=hevc_videotoolbox \
 "
 
 openssl="${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib/libssl.a"
@@ -114,7 +118,7 @@ then
 --disable-decoder=truehd"
 fi
 
-if [ "$BUILD_EXT" == "ios" -o "$BUILD_EXT" == "maccatalyst" ]
+if [ "$BUILD_EXT" == "ios" -o "$BUILD_EXT" == "maccatalyst" -o "$BUILD_EXT" == "tvos" ]
 then
     # audiotoolbox.m currently doesn't compile for iOS.
     CONFIGURE_FLAGS="$CONFIGURE_FLAGS \
