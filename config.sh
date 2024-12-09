@@ -3,8 +3,8 @@
 export BUILD_DIR="build/release"
 CWD=`pwd`
 
-export DEPLOYMENT_TARGET_IOS="11.0.0"
-export DEPLOYMENT_TARGET_TVOS="14.0.0"
+export DEPLOYMENT_TARGET_IOS="12.0.0"
+export DEPLOYMENT_TARGET_TVOS="13.0.0"
 export DEPLOYMENT_TARGET_WATCHOS="7.0.0"
 
 XCODE_PATH=$(xcode-select -p)
@@ -95,9 +95,9 @@ function config_for_maccatalyst() {
     local ARCH=$1
     if [ "$ARCH" = "arm64" ]
     then
-        target="arm64-apple-ios14.0-macabi"
+        target="arm64-apple-ios-macabi"
     else
-        target="x86_64-apple-ios13.1-macabi"
+        target="x86_64-apple-ios-macabi"
     fi
 
     export BUILD_EXT="maccatalyst"
@@ -164,13 +164,13 @@ function config_for_tvos() {
         if [ "$ARCH" = "arm64-simulator" ]
         then
             ARCH="arm64"
-            target="arm64-apple-tvos14.0-simulator"
+            target="arm64-apple-tvos-simulator"
         else
-            target="x86_64-apple-tvos14.0-simulator"
+            target="x86_64-apple-tvos-simulator"
         fi
     else
         PLATFORM="appletvos"
-        target="arm64-apple-tvos14.0"
+        target="arm64-apple-tvos"
     fi
     export PLATFORM=$PLATFORM
     
