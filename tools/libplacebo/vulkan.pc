@@ -1,0 +1,11 @@
+prefix=/Volumes/E_SSD/Projects/mpv-apple-build/build/release/tvos/arm64/scratch/moltenvk
+exec_prefix=${prefix}
+libdir=/Volumes/E_SSD/Projects/mpv-apple-build/build/release/tvos/arm64/lib
+includedir=/Volumes/E_SSD/Projects/mpv-apple-build/build/release/tvos/arm64/include
+
+Name: vulkan
+Description: Vulkan
+Version: $VULKAN_SDK_VERSION
+Libs: -L\${libdir} -lMoltenVK
+Libs.private: -lm
+Cflags: -I\${includedir}
