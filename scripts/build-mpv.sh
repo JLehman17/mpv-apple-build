@@ -105,7 +105,7 @@ function main() {
     fi
     
     videotoolbox_enable=""
-    if [ "$BUILD_EXT" == "tvos" ]
+    if [ "$BUILD_EXT" == "tvos" -o "$BUILD_EXT" == "ios" ]
     then
         videotoolbox_enable="-Dvideotoolbox-gl=disabled"
     fi
@@ -129,6 +129,7 @@ function main() {
         -Dmacos-cocoa-cb=disabled \
         -Dmacos-media-player=disabled \
         -Dmacos-touchbar=disabled \
+        -Dmanpage-build=disabled \
         -Dcplayer=false \
         -Dlua=disabled \
         -Djavascript=disabled \
