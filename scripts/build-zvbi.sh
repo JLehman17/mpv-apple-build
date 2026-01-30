@@ -3,7 +3,6 @@
 ARCH=$1
 
 # directories
-ZVBI_VERSION="0.2.35"
 SOURCE="src/zvbi-$ZVBI_VERSION"
 BUILD="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/zvbi"
 SCRATCH=$BUILD/"build"

@@ -4,6 +4,7 @@ set -e
 set -o pipefail
 
 source config.sh
+source versions.sh
 
 config_for_tvos
 

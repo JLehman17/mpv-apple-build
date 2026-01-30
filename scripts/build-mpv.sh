@@ -2,14 +2,6 @@
 
 ARCH=$1
 
-#if [ "$BUILD_EXT" == "watchos" ]
-#then
-#    # 0.33.0 doesn't use posix-spawn which is prohibited on watchOS... Unfortuantely it also make libass a requirement.
-#    MPV_VERSION="0.33.0"
-#else
-#    MPV_VERSION="0.32.0"
-#fi
-MPV_VERSION="0.38.0-moltenvk"
 SOURCE="src/mpv-$MPV_VERSION"
 
 BUILD_OUT="${ROOT_DIR}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/scratch/mpv"

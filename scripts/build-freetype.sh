@@ -4,7 +4,6 @@ ARCH=$1
 
 CWD=`pwd`
 
-FREETYPE_VERSION="2.10.1"
 SOURCE="src/freetype-$FREETYPE_VERSION"
 BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/freetype"
 SCRATCH=$BUILD_OUT/"build"

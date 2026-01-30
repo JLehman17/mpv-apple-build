@@ -3,6 +3,7 @@
 set -e
 
 source config.sh
+source versions.sh
 
 config_for_macos
 

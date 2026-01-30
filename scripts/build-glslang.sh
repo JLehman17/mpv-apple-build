@@ -1,8 +1,7 @@
 #!/bin/sh
 
 # directories
-VERSION="14.1.0"
-SOURCE="src/glslang-$VERSION"
+SOURCE="src/glslang-$GLSLANG_VERSION"
 
 ARCH=$1
 

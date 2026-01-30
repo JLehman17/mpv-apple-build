@@ -1,8 +1,7 @@
 #!/bin/sh
 
 # directories
-VERSION="3.0.3"
-SOURCE="src/openssl-${VERSION}-${BUILD_EXT}"
+SOURCE="src/openssl-${OPENSSL_VERSION}-${BUILD_EXT}"
 
 DEBUG=
 

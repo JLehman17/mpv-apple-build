@@ -2,8 +2,7 @@
 
 ARCH=$1
 
-VERSION="2.16"
-SOURCE="src/lcms-$VERSION"
+SOURCE="src/lcms-$LCMS_VERSION"
 
 BUILD_OUT="${ROOT_DIR}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/scratch/lcms"
 PREFIX="${ROOT_DIR}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}"

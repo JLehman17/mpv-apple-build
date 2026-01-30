@@ -3,9 +3,7 @@
 
 ARCH=$1
 
-VERSION="6.338.2"
-#VERSION="3.120.3" # needed for tmm1's moltenVK for iOS/tvOS
-SOURCE="src/libplacebo-$VERSION"
+SOURCE="src/libplacebo-$PLACEBO_VERSION"
 
 BUILD_OUT="${ROOT_DIR}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/scratch/libplacebo"
 PREFIX="${ROOT_DIR}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}"

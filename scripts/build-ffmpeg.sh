@@ -1,9 +1,6 @@
 #!/bin/sh
 
 # directories
-FF_VERSION="4.2.1"
-# watchos version is FF_VERSION="4.2.1-watchos"
-# maccatlyst version is FF_VERSION="4.2.1"
 SOURCE="src/ffmpeg-$FF_VERSION"
 
 DEBUG=

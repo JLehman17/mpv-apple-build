@@ -2,7 +2,6 @@
 
 ARCH=$1
 
-LIBASS_VERSION="0.17.3"
 SOURCE="src/libass-$LIBASS_VERSION"
 
 BUILD_OUT="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/libass"

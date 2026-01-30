@@ -2,7 +2,6 @@
 
 ARCH=$1
 
-HARFBUZZ_VERSION="2.2.0"
 SOURCE="src/harfbuzz-$HARFBUZZ_VERSION"
 SCRATCH="$BUILD_DIR/$BUILD_EXT/$ARCH/scratch/harfbuzz"
 BUILD_OUT=$SCRATCH/"build"
