@@ -3,23 +3,25 @@
 set -e
 
 source config.sh
-source versions.sh
-
 config_for_watchos
+source versions.sh
 
 CWD=$(pwd)
 LOG="${CWD}/${BUILD_DIR}/${BUILD_EXT}/build.log"
 FAT="${BUILD_DIR}/${BUILD_EXT}/lib"
 DEPS=(
     ffmpeg
-#    mpv
+    mpv
 )
 
 ARCHS=(
+    arm64
     armv7k
     arm64_32
-#    x86_64
+    x86_64
 )
+
+LIPO=
 
 echo "Starting Build $(date)" | tee ${LOG}
 
@@ -38,6 +40,11 @@ do
 
 done
 
+if [ ! "$LIPO" ];
+then
+    exit 0;
+fi
+
 echo "Building fat libraries..." | tee -a ${LOG}
 
 if [ ! -r $FAT ]
@@ -46,6 +53,7 @@ then
 fi
 
 LIPO_ARCHS=(
+    arm64
     armv7k
     arm64_32
 #    x86_64

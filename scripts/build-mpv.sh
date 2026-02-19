@@ -63,9 +63,16 @@ function main() {
             patch -p0 < "tvos_wscript_build.py.patch" && rm "./tvos_wscript_build.py.patch" || exit 1
         fi
         
-        # If using mpv < 0.37.0
-    #    ./bootstrap.py
-        # else
+        if [ ! "$MPV_VERSION" = "master" ]
+        then
+            # If using mpv < 0.37.0
+            if version_lt "$MPV_VERSION" "0.37.0";
+            then
+                echo "$MPV_VERSION is lower than 0.37.0. Running bootstrap..."
+                ./bootstrap.py
+            fi
+        fi
+
         mkdir -p subprojects
         git clone https://code.videolan.org/videolan/libplacebo.git --depth=1 --recursive subprojects/libplacebo
         
@@ -83,6 +90,18 @@ function main() {
         build_with_waf
         echo Done
         exit 0
+    fi
+    
+    if [ ! "$MPV_VERSION" = "master" ]
+    then
+        # If using mpv < 0.37.0
+        if version_lt "$MPV_VERSION" "0.37.0";
+        then
+            echo "Building with waf..."
+            build_with_waf
+            echo Done
+            exit 0
+        fi
     fi
 
     crossfile="${ROOT_DIR}/tools/meson/${BUILD_EXT}_cross_${ARCH}.txt"
@@ -164,11 +183,8 @@ function build_with_waf() {
     --disable-libbluray \
     --disable-zimg \
     --disable-vapoursynth \
-    --enable-moltenvk \
-    --enable-libplacebo \
     --disable-vaapi \
     --disable-wayland \
-    --enable-vulkan \
     "
 
     #--enable-avfoundation \
@@ -182,12 +198,14 @@ function build_with_waf() {
 
     if [ "$BUILD_EXT" == "watchos" ]
     then
-        CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-libass"
+        CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-libass --enable-audioengine"
+    else
+        CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-vulkan"
     fi
     
     if [ "$VULKAN_TEST" ]
     then
-        CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-moltenvk"
+        CONFIGURE_FLAGS="$CONFIGURE_FLAGS --enable-moltenvk --enable-libplacebo"
     fi
     
     if [ "$BUILD_EXT" == "tvos" ]
@@ -197,15 +215,39 @@ function build_with_waf() {
 
     echo "Configuring with options $CONFIGURE_FLAGS"
 
-    python3 ./waf configure $CONFIGURE_FLAGS \
+    python3.10 ./waf configure $CONFIGURE_FLAGS \
         --prefix="$PREFIX" \
         --out="$BUILD_OUT" \
         --libdir="$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/lib" \
         --includedir="$CWD/$BUILD_DIR/$BUILD_EXT/$ARCH/include" \
     || exit 1
-    #python3 ./waf clean
-    python3 ./waf build -j4 || exit 1
-    python3 ./waf install || exit 1
+    python3.10 ./waf clean
+    python3.10 ./waf build -j4 || exit 1
+    python3.10 ./waf install || exit 1
+}
+
+function version_lt() {
+    local IFS=.
+    local i ver1=($1) ver2=($2)
+
+    # pad shorter version with zeros
+    for ((i=${#ver1[@]}; i<${#ver2[@]}; i++)); do
+        ver1[i]=0
+    done
+    for ((i=${#ver2[@]}; i<${#ver1[@]}; i++)); do
+        ver2[i]=0
+    done
+
+    for ((i=0; i<${#ver1[@]}; i++)); do
+        if ((10#${ver1[i]} < 10#${ver2[i]})); then
+            return 0
+        fi
+        if ((10#${ver1[i]} > 10#${ver2[i]})); then
+            return 1
+        fi
+    done
+
+    return 1
 }
 
 main "$@"
