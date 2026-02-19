@@ -23,13 +23,19 @@ function config_for_ios() {
     local ARCH=$1
     export BUILD_EXT="ios"
     
-    if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]
+    if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" -o "$ARCH" = "arm64-simulator" ]
     then
         PLATFORM="iphonesimulator"
     else
         PLATFORM="iphoneos"
     fi
     export PLATFORM=$PLATFORM
+    
+    realarch=$ARCH
+    if [ "$ARCH" = "arm64-simulator" ]
+    then
+        realarch="arm64"
+    fi
     
     XCRUN_SDK=`echo $PLATFORM | tr '[:upper:]' '[:lower:]'`
     SYSROOT=$(xcrun --sdk $XCRUN_SDK --show-sdk-path)
@@ -39,9 +45,9 @@ function config_for_ios() {
     export AR=$(xcrun -sdk $XCRUN_SDK -find ar)
     
     export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
-    export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mios-version-min=$DEPLOYMENT_TARGET_IOS -arch $ARCH \
+    export CFLAGS="-isysroot $SDKPATH -arch $realarch -mios-version-min=$DEPLOYMENT_TARGET_IOS -arch $realarch \
                     -I${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/include"
-    export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -mios-version-min=$DEPLOYMENT_TARGET_IOS -arch $ARCH \
+    export LDFLAGS="-isysroot $SDKPATH -arch $realarch -mios-version-min=$DEPLOYMENT_TARGET_IOS -arch $realarch \
                     -L${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib"
     export CXXFLAGS="$CFLAGS"
     export CPPFLAGS="$CFLAGS"
