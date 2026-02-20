@@ -30,6 +30,7 @@ DEPS=(
 ARCHS=(
     arm64
     x86_64
+    arm64-simulator
 )
 
 LIPO=

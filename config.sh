@@ -23,19 +23,21 @@ function config_for_ios() {
     local ARCH=$1
     export BUILD_EXT="ios"
     
-    if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" -o "$ARCH" = "arm64-simulator" ]
-    then
-        PLATFORM="iphonesimulator"
-    else
-        PLATFORM="iphoneos"
-    fi
-    export PLATFORM=$PLATFORM
-    
     realarch=$ARCH
     if [ "$ARCH" = "arm64-simulator" ]
     then
         realarch="arm64"
     fi
+    
+    if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" -o "$ARCH" = "arm64-simulator" ]
+    then
+        PLATFORM="iphonesimulator"
+        target="$realarch-apple-ios-simulator"
+    else
+        PLATFORM="iphoneos"
+        target="$realarch-apple-ios"
+    fi
+    export PLATFORM=$PLATFORM
     
     XCRUN_SDK=`echo $PLATFORM | tr '[:upper:]' '[:lower:]'`
     SYSROOT=$(xcrun --sdk $XCRUN_SDK --show-sdk-path)
@@ -46,9 +48,11 @@ function config_for_ios() {
     
     export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
     export CFLAGS="-isysroot $SDKPATH -arch $realarch -mios-version-min=$DEPLOYMENT_TARGET_IOS -arch $realarch \
-                    -I${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/include"
+                    -I${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/include \
+                    -target $target"
     export LDFLAGS="-isysroot $SDKPATH -arch $realarch -mios-version-min=$DEPLOYMENT_TARGET_IOS -arch $realarch \
-                    -L${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib"
+                    -L${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib \
+                    -target $target"
     export CXXFLAGS="$CFLAGS"
     export CPPFLAGS="$CFLAGS"
     
@@ -67,11 +71,19 @@ function config_for_watchos() {
     local ARCH=$1
     export BUILD_EXT="watchos"
     
-    if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" ]
+    realarch=$ARCH
+    if [ "$ARCH" = "arm64-simulator" ]
+    then
+        realarch="arm64"
+    fi
+    
+    if [ "$ARCH" = "i386" -o "$ARCH" = "x86_64" -o "$ARCH" = "arm64-simulator" ]
     then
         PLATFORM="watchsimulator"
+        target="$realarch-apple-watchos-simulator"
     else
         PLATFORM="watchos"
+        target="$realarch-apple-watchos"
     fi
     export PLATFORM=$PLATFORM
     
@@ -83,10 +95,12 @@ function config_for_watchos() {
     export AR=$(xcrun -sdk $XCRUN_SDK -find ar)
     
     export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
-    export CFLAGS="-isysroot $SDKPATH -arch $ARCH -mwatchos-version-min=$DEPLOYMENT_TARGET_WATCHOS -arch $ARCH \
-                    -I${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/include -fembed-bitcode"
-    export LDFLAGS="-isysroot $SDKPATH -arch $ARCH -mwatchos-version-min=$DEPLOYMENT_TARGET_WATCHOS -arch $ARCH \
-                    -L${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib"
+    export CFLAGS="-isysroot $SDKPATH -arch $realarch -mwatchos-version-min=$DEPLOYMENT_TARGET_WATCHOS -arch $realarch \
+                    -I${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/include -fembed-bitcode \
+                    -target $target"
+    export LDFLAGS="-isysroot $SDKPATH -arch $realarch -mwatchos-version-min=$DEPLOYMENT_TARGET_WATCHOS -arch $realarch \
+                    -L${CWD}/${BUILD_DIR}/${BUILD_EXT}/${ARCH}/lib \
+                    -target $target"
     export CXXFLAGS="$CFLAGS"
     export CPPFLAGS="$CFLAGS"
     

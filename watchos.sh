@@ -19,6 +19,7 @@ ARCHS=(
     armv7k
     arm64_32
     x86_64
+    arm64-simulator
 )
 
 LIPO=
@@ -56,7 +57,8 @@ LIPO_ARCHS=(
     arm64
     armv7k
     arm64_32
-#    x86_64
+    x86_64
+    arm64-simulator
 )
 
 arch_0=${LIPO_ARCHS[0]}
