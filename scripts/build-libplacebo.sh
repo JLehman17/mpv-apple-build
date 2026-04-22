@@ -13,15 +13,20 @@ if [ ! -r $SOURCE ]
 then
     echo "libplacebo source not found. Attempting to download..."
     cd src
-#    curl -L "https://github.com/haasn/libplacebo/archive/v${VERSION}.tar.gz" | tar -xj || exit 1
-    git clone https://github.com/haasn/libplacebo.git "libplacebo-${VERSION}"
-    cd "libplacebo-${VERSION}"
-    git checkout "v${VERSION}"
+#    curl -L "https://github.com/haasn/libplacebo/archive/v${PLACEBO_VERSION}.tar.gz" | tar -xj || exit 1
+    git clone https://github.com/haasn/libplacebo.git "libplacebo-${PLACEBO_VERSION}"
+    cd "libplacebo-${PLACEBO_VERSION}"
+    git checkout "v${PLACEBO_VERSION}"
     git submodule update --init
     cd $ROOT_DIR
 fi
 
 CWD=`pwd`
+
+export CFLAGS="${CFLAGS} -I${CWD}/src/moltenVK-${MOLTENVK_VERSION}-${BUILD_EXT}/External/glslang/build/include/"
+export CFLAGS="${CFLAGS} -I${CWD}/src/moltenVK-${MOLTENVK_VERSION}-${BUILD_EXT}/External/glslang/"
+export CFLAGS="${CFLAGS} -I${CWD}/src/moltenVK-${MOLTENVK_VERSION}-${BUILD_EXT}/External/"
+
 echo "building..."
 cd "${SOURCE}"
 

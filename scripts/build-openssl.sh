@@ -26,8 +26,10 @@ function download_deps() {
     if [ ! -r $SOURCE ]
     then
         echo "OpenSSL source not found. Trying to download..."
-        mkdir -p $SOURCE && curl "https://www.openssl.org/source/openssl-${VERSION}.tar.gz" | tar -xj -C $SOURCE --strip-components 1 ||
-            ( rm ./$SOURCE && exit 1 )
+        mkdir -p $SOURCE &&
+        curl -L "https://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz" |
+            tar xz -C $SOURCE --strip-components 1 || exit 1
+        
         cd $ROOT_DIR
     fi
 }

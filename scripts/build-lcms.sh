@@ -26,7 +26,7 @@ function main() {
         echo 'Little CMS source not found. Trying to download...'
 
         mkdir -p $SOURCE &&
-        curl -L https://github.com/mm2/Little-CMS/releases/download/lcms"${VERSION}"/lcms2-"${VERSION}".tar.gz |
+        curl -L "https://github.com/mm2/Little-CMS/releases/download/lcms${LCMS_VERSION}/lcms2-${LCMS_VERSION}.tar.gz" |
             tar xj -C $SOURCE --strip-components 1 || exit 1
         
         cd $ROOT_DIR

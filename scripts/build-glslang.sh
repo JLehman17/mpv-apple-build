@@ -23,9 +23,9 @@ function download_deps() {
         echo "glslang source not found. Trying to download..."
         
         cd src
-        git clone https://github.com/KhronosGroup/glslang.git "glslang-${VERSION}"
-        cd "glslang-${VERSION}"
-        git checkout "${VERSION}"
+        git clone https://github.com/KhronosGroup/glslang.git "glslang-${GLSLANG_VERSION}"
+        cd "glslang-${GLSLANG_VERSION}"
+        git checkout "${GLSLANG_VERSION}"
         
 #        ./update_glslang_sources.py
         
