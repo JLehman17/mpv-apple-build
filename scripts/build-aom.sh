@@ -56,6 +56,8 @@ fi
 
 # Copy toolchain files
 
+mkdir -p "build/cmake/toolchains/"
+
 if [ "$BUILD_EXT" == "ios" ]
 then
     TOOLCHAIN_FILE="build/cmake/toolchains/${ARCH}-ios${sim}.cmake"
