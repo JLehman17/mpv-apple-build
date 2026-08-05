@@ -12,15 +12,19 @@ CWD=$(pwd)
 LOG="${CWD}/${BUILD_DIR}/${BUILD_EXT}/build.log"
 FAT="${BUILD_DIR}/${BUILD_EXT}/lib"
 DEPS=(
-#    aom
-#    zvbi
-#    freetype
-#    harfbuzz
-#    fribidi
-#    libass
-#    openssl
-#    ffmpeg
-#    mpv
+    aom
+    zvbi
+    freetype
+    fribidi
+    harfbuzz
+    lcms
+    libass
+    glslang
+    moltenvk
+    libplacebo
+    openssl
+    ffmpeg
+    mpv
 )
 
 ARCHS=(
