@@ -12,25 +12,28 @@ CWD=$(pwd)
 LOG="${CWD}/${BUILD_DIR}/${BUILD_EXT}/build.log"
 FAT="${BUILD_DIR}/${BUILD_EXT}/lib"
 DEPS=(
-#    aom
-#    zvbi
-#    freetype # Harfbuzz needs freetype.
-#    harfbuzz
-#    freetype # Build freetype again with harfbuzz support.
-#    fribidi
-#    libass
-#    openssl
+    aom
+    zvbi
+    freetype
+    fribidi
+    harfbuzz
+    lcms
+    libass
+    glslang
+    moltenvk
+    libplacebo
+    openssl
     ffmpeg
-#    mpv
+    mpv
 )
 
 ARCHS=(
-#    arm64
+    arm64
     x86_64
-#    arm64-simulator
+    arm64-simulator
 )
 
-LIPO=y
+LIPO=
 XCFRAMEWORK=
 
 echo "Starting Build $(date)" | tee ${LOG}
