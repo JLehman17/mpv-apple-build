@@ -43,11 +43,15 @@ else
     real_arch=$ARCH
 fi
 
-# TODO: Support ios arm64 simulator builds
 if [ "$PLATFORM" == "iphonesimulator" -o "$PLATFORM" == "appletvsimulator" ]
 then
     sim="-simulator"
-    ARCH_OPTIONS="-DARCH_X86_64=1 -DENABLE_SSE4_1=1 -DHAVE_SSE4_2=1"
+    if [ "$real_arch" == "arm64" ]
+    then
+        ARCH_OPTIONS="-DARCH_ARM=1 -DENABLE_NEON=1 -DHAVE_NEON=1"
+    else
+        ARCH_OPTIONS="-DARCH_X86_64=1 -DENABLE_SSE4_1=1 -DHAVE_SSE4_2=1"
+    fi
     
 elif [ "$PLATFORM" == "iphoneos" -o "$PLATFORM" == "appletvos" ]
 then
