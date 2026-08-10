@@ -181,6 +181,7 @@ function config_for_tvos() {
     if [ "$ARCH" = "arm64-simulator" -o "$ARCH" = "x86_64" ]
     then
         PLATFORM="appletvsimulator"
+        deployment_flag="-mtvos-simulator-version-min"
         if [ "$ARCH" = "arm64-simulator" ]
         then
             ARCH="arm64"
@@ -190,6 +191,7 @@ function config_for_tvos() {
         fi
     else
         PLATFORM="appletvos"
+        deployment_flag="-mtvos-version-min"
         target="arm64-apple-tvos"
     fi
     export PLATFORM=$PLATFORM
@@ -203,10 +205,10 @@ function config_for_tvos() {
     
     export SDKPATH="$(xcodebuild -sdk $PLATFORM -version Path)"
     export CFLAGS="-isysroot $SDKPATH -target $target -arch $ARCH \
-                    -mtvos-version-min=$DEPLOYMENT_TARGET_TVOS -fembed-bitcode \
+                    $deployment_flag=$DEPLOYMENT_TARGET_TVOS -fembed-bitcode \
                     -I${CWD}/${BUILD_DIR}/${BUILD_EXT}/${arch_name}/include"
     export LDFLAGS="-isysroot $SDKPATH -target $target -arch $ARCH \
-                    -mtvos-version-min=$DEPLOYMENT_TARGET_TVOS \
+                    $deployment_flag=$DEPLOYMENT_TARGET_TVOS \
                     -L${CWD}/${BUILD_DIR}/${BUILD_EXT}/${arch_name}/lib"
     export CXXFLAGS="$CFLAGS"
     export CPPFLAGS="$CFLAGS"

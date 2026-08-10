@@ -38,7 +38,7 @@ download_deps
 
 if [[ "$BUILD_EXT" == "ios" || "$BUILD_EXT" == "tvos" ]]
 then
-    if [ "$ARCH" = "arm64" ]
+    if [ "$ARCH" = "arm64" -o "$ARCH" = "arm64-simulator" ]
     then
         CONFIGURE_FLAGS="ios64-cross"
     else
@@ -75,11 +75,14 @@ then
     CONFIGURE_FLAGS=" ${CONFIGURE_FLAGS} \
 -DHAVE_FORK=0 \
 -no-asm \
+-no-tests \
 "
     pushd "${ROOT_DIR}/${SOURCE}"
     # Patch apps/... to not use fork() since it's not available on tvOS
-    sed -i '' '1s;^;#define HAVE_FORK 0\n;' "./apps/speed.c"
-    sed -i '' '1s;^;#define HAVE_FORK 0\n;' "./apps/include/http_server.h"
+    grep -q '^#define HAVE_FORK 0$' "./apps/speed.c" || \
+        sed -i '' '1s;^;#define HAVE_FORK 0\n;' "./apps/speed.c"
+    grep -q '^#define HAVE_FORK 0$' "./apps/include/http_server.h" || \
+        sed -i '' '1s;^;#define HAVE_FORK 0\n;' "./apps/include/http_server.h"
     # Patch Configure to build for tvOS, not iOS
     sed -i '' 's/D\_REENTRANT\:iOS/D\_REENTRANT\:tvOS/' "./Configure"
     popd
@@ -103,8 +106,14 @@ $CWD/$SOURCE/Configure $CONFIGURE_FLAGS \
  
 if [[ "${BUILD_EXT}" == "tvos" ]]
 then
-    # Change mios-version-min to mtvos-version-min
-    sed -i '' "s/-mios-version-min=7.0.0/-mtvos-version-min=${DEPLOYMENT_TARGET_TVOS}/g" "Makefile"
+    if [ "${PLATFORM}" = "appletvsimulator" ]
+    then
+        tvos_version_min_flag="-mtvos-simulator-version-min"
+    else
+        tvos_version_min_flag="-mtvos-version-min"
+    fi
+    # Replace the iOS deployment flag inherited from OpenSSL's ios64-cross target.
+    sed -i '' "s/-mios-version-min=7.0.0/${tvos_version_min_flag}=${DEPLOYMENT_TARGET_TVOS}/g" "Makefile"
 fi
 
 echo "Building..."
