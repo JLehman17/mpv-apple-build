@@ -5,6 +5,12 @@ SOURCE="src/glslang-$GLSLANG_VERSION"
 
 ARCH=$1
 
+source config.sh
+old_target=$DEPLOYMENT_TARGET_IOS
+export DEPLOYMENT_TARGET_IOS="13.0.0"
+config_for_ios $ARCH
+export DEPLOYMENT_TARGET_IOS=$old_target
+
 # Use this patch for pkg-config file generation:
 # https://src.fedoraproject.org/rpms/glslang/blob/rawhide/f/0001-pkg-config-compatibility.patch
 # Also see:
