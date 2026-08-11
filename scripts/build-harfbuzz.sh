@@ -13,12 +13,7 @@ if [ ! -r $SOURCE ]
 then
     echo "harfbuzz source not found. Attempting to download..."
     cd src
-    curl -L "https://www.freedesktop.org/software/harfbuzz/release/harfbuzz-$HARFBUZZ_VERSION.tar.bz2" | tar -xj || exit 1
-    
-#        mkdir $SOURCE
-#        cd $SOURCE
-#        wget https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.xz -O - | \
-#            tar -xJ --strip-components=1
+    curl -L "https://github.com/harfbuzz/harfbuzz/releases/download/$HARFBUZZ_VERSION/harfbuzz-$HARFBUZZ_VERSION.tar.bz2" | tar -xj || exit 1
 
     cd $root
 fi
